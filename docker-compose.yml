@@ -1,0 +1,39 @@
+# watermarks-remover (Go) — production-ish local deployment.
+#
+#   docker compose up -d          # build + start on 127.0.0.1:8765
+#
+# All knobs come from the environment (or a Compose-style .env file next to
+# this one); defaults mirror the bare-metal defaults.
+
+services:
+  watermarks-remover:
+    build: .
+    image: watermarks-remover:latest
+    container_name: watermarks-remover
+    restart: unless-stopped
+    # Loopback-only by default; change the host side for trusted networks.
+    ports:
+      - "${WATERMARKS_BIND:-127.0.0.1}:${WATERMARKS_PORT:-8765}:8765"
+    environment:
+      WATERMARKS_SERVER_VERSION: "${WATERMARKS_SERVER_VERSION:-docker}"
+      WATERMARKS_SERVER_API_KEY: "${WATERMARKS_SERVER_API_KEY:-}"
+      WATERMARKS_SERVER_HOST: "0.0.0.0"
+      WATERMARKS_SERVER_PORT: "8765"
+      WATERMARKS_LANG: "${WATERMARKS_LANG:-}"
+      WATERMARKS_AUTO_CLEAN: "${WATERMARKS_AUTO_CLEAN:-0}"
+      WATERMARKS_AUTO_CLEAN_INTERVAL: "${WATERMARKS_AUTO_CLEAN_INTERVAL:-15m}"
+      WATERMARKS_AUTO_CLEAN_THRESHOLD: "${WATERMARKS_AUTO_CLEAN_THRESHOLD:-11}"
+      WATERMARKS_AUTO_CLEAN_TTL: "${WATERMARKS_AUTO_CLEAN_TTL:-24h}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

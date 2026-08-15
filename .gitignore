@@ -1,0 +1,14 @@
+# build artifacts
+bin/
+*.exe
+
+# local env / secrets
+.env
+
+# editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# release artifacts
+dist/

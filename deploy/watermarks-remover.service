@@ -1,0 +1,34 @@
+[Unit]
+Description=watermarks-remover (Go) — AI provenance mark inspector/cleaner
+Documentation=file:/usr/local/share/watermarks-remover/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=watermarks
+Group=watermarks
+EnvironmentFile=/etc/watermarks-remover.env
+ExecStart=/usr/local/bin/watermarks-server
+Restart=on-failure
+RestartSec=3
+
+# Hardening: the service needs only its own binary, /etc config and a
+# private /tmp (its temp + download files, cleaned by the built-in janitor).
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target

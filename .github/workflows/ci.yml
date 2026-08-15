@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d2e3f8a4d936a45456e98f82e26fae6b0b50d00e # v5.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./...
+
+      - name: Cross-compile (linux/darwin/freebsd incl. janitor disk-free)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          for target in linux/amd64 linux/arm64 linux/386 darwin/amd64 darwin/arm64 freebsd/amd64; do
+            GOOS=${target%/*} GOARCH=${target#*/} go build ./...
+          done
+
+      - name: HTTP + MCP smoke
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          go build -o /tmp/wm-server ./cmd/watermarks-server
+          /tmp/wm-server --port 18765 &
+          sleep 1
+          curl -fsS http://127.0.0.1:18765/health | grep '"ok"'
+          curl -fsS "http://127.0.0.1:18765/api/i18n?lang=zh" | grep '"lang":"zh"'
+          printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"locale":"zh-CN"}}\n{"jsonrpc":"2.0","id":2,"method":"tools/list"}\n' \
+            | go run ./cmd/watermarks-mcp | head -2 | grep -c '"name":"capabilities"'
