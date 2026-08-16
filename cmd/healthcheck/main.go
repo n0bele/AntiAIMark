@@ -1,4 +1,4 @@
-// healthcheck: probes the watermarks-remover service /health endpoint and
+// healthcheck: probes the antiaimark service /health endpoint and
 // exits 0 on HTTP 200. Used by Docker HEALTHCHECK and systemd watchdogs;
 // has no external dependencies so it runs on distroless images.
 package main
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	port := os.Getenv("WATERMARKS_SERVER_PORT")
+	port := os.Getenv("ANTIAIMARK_SERVER_PORT")
 	if port == "" {
 		port = "8765"
 	}

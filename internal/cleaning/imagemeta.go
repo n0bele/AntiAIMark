@@ -105,6 +105,13 @@ var aiMetaHints = [][]byte{
 	[]byte("海螺"),
 	[]byte("Vidu"),
 	[]byte("PixVerse"),
+	// Music / speech generators
+	[]byte("Suno"),
+	[]byte("ElevenLabs"),
+	[]byte("Eleven Labs"),
+	[]byte("MusicGen"),
+	[]byte("AudioCraft"),
+	[]byte("ACE Studio"),
 }
 
 // aiPlusC2paMarkers is AI_META_HINTS + C2PA_MARKERS; the concatenation order

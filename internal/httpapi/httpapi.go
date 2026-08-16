@@ -25,8 +25,8 @@ import (
 	"strconv"
 	"strings"
 
-	"watermarks-remover/internal/cleaning"
-	"watermarks-remover/internal/i18n"
+	"antiaimark/internal/cleaning"
+	"antiaimark/internal/i18n"
 )
 
 //go:embed static

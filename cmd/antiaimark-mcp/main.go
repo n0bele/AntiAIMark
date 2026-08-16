@@ -1,15 +1,15 @@
-// watermarks-mcp: MCP (Model Context Protocol) server over stdio — the
+// antiaimark-mcp: MCP (Model Context Protocol) server over stdio — the
 // standard integration for AI IDEs and agents (Claude Code/Desktop, Cursor,
 // Windsurf, Cline, Continue, Zed, ...).
 //
 // Register it with any MCP client, e.g. for Claude Code:
 //
-//	claude mcp add watermarks-remover -- /path/to/watermarks-mcp
+//	claude mcp add antiaimark -- /path/to/antiaimark-mcp
 //
 // or in a client config:
 //
-//	{ "mcpServers": { "watermarks-remover": {
-//	    "command": "/path/to/watermarks-mcp"
+//	{ "mcpServers": { "antiaimark": {
+//	    "command": "/path/to/antiaimark-mcp"
 //	} } }
 //
 // Tools: capabilities, inspect_file, clean_file, inspect_text, clean_text.
@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"os"
 
-	"watermarks-remover/internal/cliutil"
-	"watermarks-remover/internal/mcp"
+	"antiaimark/internal/cliutil"
+	"antiaimark/internal/mcp"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	flag.Parse()
 	cliutil.Init(langFlag)
 
-	version := os.Getenv("WATERMARKS_SERVER_VERSION")
+	version := os.Getenv("ANTIAIMARK_SERVER_VERSION")
 	if version == "" {
 		version = "dev"
 	}

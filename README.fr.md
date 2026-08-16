@@ -1,15 +1,17 @@
-# watermarks-remover (Go)
+# antiaimark (Go)
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Español](README.es.md) | **Français** | [Русский](README.ru.md)
 
 Détecte et supprime les marques de provenance IA dans textes, images,
-documents et vidéos — stéganographie Unicode invisible, métadonnées d'image
+documents, vidéos et audios — stéganographie Unicode invisible, métadonnées d'image
 C2PA/EXIF/XMP, métadonnées de conteneurs (PDF, DOCX, ODT, SVG, HTML, Markdown,
-vidéo best-effort) — avec des CLIs, un service HTTP + interface web, un
+vidéo et audio best-effort) — avec des CLIs, un service HTTP + interface web, un
 serveur MCP pour les IDE IA et un nettoyage automatique en arrière-plan. Go
 pur, binaires statiques, aucune dépendance à l'exécution.
 
 ## Fonctionnalités
+
+![Interface web (français) :](docs/screenshot-fr.png)
 
 - **Texte (Couche A)** — caractères de largeur nulle, contrôles bidi,
   caractères de balise, espaces homoglyphes, plans à usage privé ; aller-retour octet-exact des entrées non UTF-8
@@ -17,8 +19,8 @@ pur, binaires statiques, aucune dépendance à l'exécution.
   `digitalSourceType=trainedAlgorithmicMedia`, blocs texte du générateur ; pixels intacts
 - **Conteneurs** — PDF (exiftool + qpdf si présents), intérieur DOCX/ODT,
   blocs de métadonnées SVG, meta/JSON-LD HTML, frontmatter Markdown
-- **Vidéo** — best-effort : scan des boîtes C2PA uuid/JUMBF, atome QuickTime
-  `©too`, scan de marqueurs, purge `exiftool -all=`
+- **Vidéo et audio** — best-effort : scan des boîtes C2PA uuid/JUMBF, atome QuickTime
+  `©too`, scan de marqueurs (Suno/ElevenLabs/MusicGen…), purge `exiftool -all=`
 - **Mots-clés éditeurs** — OpenAI/Imagen/Firefly/Midjourney/Stable
   Diffusion/FLUX/Ideogram/Recraft/Grok + 豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺…
   (les balises CMS type WordPress sont conservées)
@@ -34,7 +36,7 @@ pur, binaires statiques, aucune dépendance à l'exécution.
 go build ./...          # tout compiler
 go test ./...           # lancer la suite
 ./deploy.sh build       # ou : les 12 binaires dans bin/
-./bin/watermarks-server # HTTP + web sur 127.0.0.1:8765
+./bin/antiaimark-server # HTTP + web sur 127.0.0.1:8765
 ```
 
 Ouvrez http://127.0.0.1:8765/ et déposez-y une image ou une vidéo. Exemples CLI :
@@ -64,10 +66,10 @@ Flux bare-metal sur un serveur linux :
 
 ```bash
 ./deploy.sh package amd64                  # sur votre poste
-scp dist/watermarks-remover-*-linux-amd64.tar.gz server:
-ssh server 'tar xzf watermarks-remover-*.tar.gz && cd watermarks-remover && sudo ./deploy.sh install-systemd'
-# configurer : sudoedit /etc/watermarks-remover.env   (port, clé d'API, auto-nettoyage…)
-sudo systemctl restart watermarks-remover
+scp dist/antiaimark-*-linux-amd64.tar.gz server:
+ssh server 'tar xzf antiaimark-*.tar.gz && cd antiaimark && sudo ./deploy.sh install-systemd'
+# configurer : sudoedit /etc/antiaimark.env   (port, clé d'API, auto-nettoyage…)
+sudo systemctl restart antiaimark
 ```
 
 Alternative Docker : `docker compose up -d` (bind loopback, healthcheck,
@@ -77,14 +79,14 @@ rootfs en lecture seule, capacités retirées ; réglages par environnement).
 
 | Variable | Défaut | Signification |
 | --- | --- | --- |
-| `WATERMARKS_SERVER_HOST` | `127.0.0.1` | adresse d'écoute (loopback seul sauf reverse-proxy) |
-| `WATERMARKS_SERVER_PORT` | `8765` | port |
-| `WATERMARKS_SERVER_API_KEY` | vide | exige `Authorization: Bearer <clé>` si défini |
-| `WATERMARKS_LANG` | langue système | `en` `zh` `es` `fr` `ru` |
-| `WATERMARKS_AUTO_CLEAN` | `0` | `1` active le conciliateur en arrière-plan |
-| `WATERMARKS_AUTO_CLEAN_INTERVAL` | `15m` | période de vérification |
-| `WATERMARKS_AUTO_CLEAN_THRESHOLD` | `11` | % libre déclenchant le nettoyage |
-| `WATERMARKS_AUTO_CLEAN_TTL` | `24h` | rétention des téléchargements avant éviction |
+| `ANTIAIMARK_SERVER_HOST` | `127.0.0.1` | adresse d'écoute (loopback seul sauf reverse-proxy) |
+| `ANTIAIMARK_SERVER_PORT` | `8765` | port |
+| `ANTIAIMARK_SERVER_API_KEY` | vide | exige `Authorization: Bearer <clé>` si défini |
+| `ANTIAIMARK_LANG` | langue système | `en` `zh` `es` `fr` `ru` |
+| `ANTIAIMARK_AUTO_CLEAN` | `0` | `1` active le conciliateur en arrière-plan |
+| `ANTIAIMARK_AUTO_CLEAN_INTERVAL` | `15m` | période de vérification |
+| `ANTIAIMARK_AUTO_CLEAN_THRESHOLD` | `11` | % libre déclenchant le nettoyage |
+| `ANTIAIMARK_AUTO_CLEAN_TTL` | `24h` | rétention des téléchargements avant éviction |
 
 Le conciliateur ne supprime que les répertoires temporaires `wm-*` du service
 lui-même et les téléchargements expirés — rien d'autre sur le disque ; les
@@ -104,9 +106,9 @@ requêtes en cours.
 ## Intégration aux IDE IA (MCP)
 
 ```bash
-claude mcp add watermarks-remover -- /chemin/abs/vers/bin/watermarks-mcp
+claude mcp add antiaimark -- /chemin/abs/vers/bin/antiaimark-mcp
 # mcp.json de Cursor / Windsurf / Cline :
-{ "mcpServers": { "watermarks-remover": { "command": "/chemin/abs/vers/watermarks-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/chemin/abs/vers/antiaimark-mcp" } } }
 ```
 
 Outils : `capabilities`, `inspect_file`, `clean_file`, `inspect_text`,

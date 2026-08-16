@@ -37,7 +37,7 @@ func TestInitializeAndLocale(t *testing.T) {
 	}
 	result := out["result"].(map[string]interface{})
 	info := result["serverInfo"].(map[string]interface{})
-	if info["name"] != "watermarks-remover" || info["version"] != "1.0" {
+	if info["name"] != "antiaimark" || info["version"] != "1.0" {
 		t.Fatalf("serverInfo = %v", info)
 	}
 	// locale must localize tool descriptions

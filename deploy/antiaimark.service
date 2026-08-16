@@ -1,15 +1,15 @@
 [Unit]
-Description=watermarks-remover (Go) — AI provenance mark inspector/cleaner
-Documentation=file:/usr/local/share/watermarks-remover/README.md
+Description=antiaimark (Go) — AI provenance mark inspector/cleaner
+Documentation=file:/usr/local/share/antiaimark/README.md
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=watermarks
-Group=watermarks
-EnvironmentFile=/etc/watermarks-remover.env
-ExecStart=/usr/local/bin/watermarks-server
+User=antiaimark
+Group=antiaimark
+EnvironmentFile=/etc/antiaimark.env
+ExecStart=/usr/local/bin/antiaimark-server
 Restart=on-failure
 RestartSec=3
 

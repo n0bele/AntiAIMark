@@ -11,8 +11,8 @@
 // Security notes mirror the Python original: only http(s) endpoints are
 // accepted; redirects are refused outright so an Authorization header (API
 // key) can never be re-sent to an unvalidated host; non-loopback endpoints
-// are denied unless WATERMARKS_REWRITE_ALLOW_REMOTE=1 (or --allow-remote).
-// The API key is read from WATERMARKS_REWRITE_API_KEY only — never argv.
+// are denied unless ANTIAIMARK_REWRITE_ALLOW_REMOTE=1 (or --allow-remote).
+// The API key is read from ANTIAIMARK_REWRITE_API_KEY only — never argv.
 package main
 
 import (
@@ -32,8 +32,8 @@ import (
 	"strings"
 	"time"
 
-	"watermarks-remover/internal/cleaning"
-	"watermarks-remover/internal/cliutil"
+	"antiaimark/internal/cleaning"
+	"antiaimark/internal/cliutil"
 )
 
 const defaultMarkllmModel = "facebook/opt-1.3b"
@@ -156,7 +156,7 @@ func checkRemote(baseURL string, allowRemote bool) error {
 		return nil
 	}
 	if !allowRemote {
-		return fmt.Errorf("error: rewrite base URL host is not loopback ('%s'); refusing to send content off-machine. Set WATERMARKS_REWRITE_ALLOW_REMOTE=1 or pass --allow-remote to override.", host)
+		return fmt.Errorf("error: rewrite base URL host is not loopback ('%s'); refusing to send content off-machine. Set ANTIAIMARK_REWRITE_ALLOW_REMOTE=1 or pass --allow-remote to override.", host)
 	}
 	cleaning.Eprint(fmt.Sprintf("warning: rewrite base URL host is '%s' (not localhost); content will leave this machine", host))
 	return nil
@@ -342,7 +342,7 @@ func resolvePath(p string) string {
 // scriptsDir locates the repo's service/scripts directory (the Python harness
 // adapters live there).
 func scriptsDir() string {
-	for _, start := range []string{os.Getenv("WATERMARKS_SCRIPTS_DIR"), "."} {
+	for _, start := range []string{os.Getenv("ANTIAIMARK_SCRIPTS_DIR"), "."} {
 		if start == "" {
 			continue
 		}
@@ -556,13 +556,13 @@ func main() {
 		}
 		return def
 	}
-	flag.StringVar(&backend, "backend", choiceEnv("WATERMARKS_REWRITE_BACKEND", "print-prompt"), "rewrite backend")
-	flag.StringVar(&model, "model", envOrEmpty("WATERMARKS_REWRITE_MODEL"), "model name")
-	flag.StringVar(&baseURL, "base-url", choiceEnv("WATERMARKS_REWRITE_BASE_URL", "http://127.0.0.1:11434"), "backend base URL")
-	flag.StringVar(&allowRemoteFlag, "allow-remote", "", "Allow non-loopback rewrite endpoints (default: deny; WATERMARKS_REWRITE_ALLOW_REMOTE=1 has the same effect)")
-	flag.StringVar(&reasoningEffort, "reasoning-effort", choiceEnv("WATERMARKS_REWRITE_REASONING_EFFORT", "none"), "OpenAI-compatible reasoning_effort; 'none' skips chain-of-thought; 'off' omits the parameter entirely")
+	flag.StringVar(&backend, "backend", choiceEnv("ANTIAIMARK_REWRITE_BACKEND", "print-prompt"), "rewrite backend")
+	flag.StringVar(&model, "model", envOrEmpty("ANTIAIMARK_REWRITE_MODEL"), "model name")
+	flag.StringVar(&baseURL, "base-url", choiceEnv("ANTIAIMARK_REWRITE_BASE_URL", "http://127.0.0.1:11434"), "backend base URL")
+	flag.StringVar(&allowRemoteFlag, "allow-remote", "", "Allow non-loopback rewrite endpoints (default: deny; ANTIAIMARK_REWRITE_ALLOW_REMOTE=1 has the same effect)")
+	flag.StringVar(&reasoningEffort, "reasoning-effort", choiceEnv("ANTIAIMARK_REWRITE_REASONING_EFFORT", "none"), "OpenAI-compatible reasoning_effort; 'none' skips chain-of-thought; 'off' omits the parameter entirely")
 	// NOTE: no -api-key flag on purpose — keys on argv are visible in `ps`
-	// and shell history. Set WATERMARKS_REWRITE_API_KEY instead.
+	// and shell history. Set ANTIAIMARK_REWRITE_API_KEY instead.
 	flag.StringVar(&strength, "strength", "paraphrase", "rewrite strength")
 	flag.StringVar(&lang, "lang", "French", "Pivot language for backtranslate")
 	flag.StringVar(&originalLang, "original-lang", "English", "Original language")
@@ -573,7 +573,7 @@ func main() {
 	flag.BoolVar(&jsonStats, "json-stats", false, "Stats JSON on stderr")
 	flag.StringVar(&markllmScheme, "markllm-scheme", "", "Optional: run MarkLLM before/after detection around the rewrite")
 	flag.StringVar(&markllmDir, "markllm-dir", envOrEmpty("MARKLLM_DIR"), "MarkLLM checkout root (default: $MARKLLM_DIR)")
-	flag.StringVar(&markllmModel, "markllm-model", choiceEnv("WATERMARKS_MARKLLM_MODEL", defaultMarkllmModel), "Scoring model for MarkLLM detection")
+	flag.StringVar(&markllmModel, "markllm-model", choiceEnv("ANTIAIMARK_MARKLLM_MODEL", defaultMarkllmModel), "Scoring model for MarkLLM detection")
 	flag.Float64Var(&markllmTimeout, "markllm-timeout", 180.0, "Timeout per MarkLLM detection call (default: 180.0)")
 	flag.BoolVar(&forceText, "force-text", false, "Rewrite even when the input looks like a binary container")
 	var langFlag string
@@ -598,7 +598,7 @@ func main() {
 		cliutil.FatalErr(err)
 	}
 
-	allowRemote := flagEnv("WATERMARKS_REWRITE_ALLOW_REMOTE")
+	allowRemote := flagEnv("ANTIAIMARK_REWRITE_ALLOW_REMOTE")
 	if allowRemoteFlag != "" {
 		allowRemote = allowRemoteFlag == "true" || allowRemoteFlag == "1"
 	}
@@ -612,7 +612,7 @@ func main() {
 		backend:         backend,
 		model:           model,
 		baseURL:         baseURL,
-		apiKey:          envOrEmpty("WATERMARKS_REWRITE_API_KEY"),
+		apiKey:          envOrEmpty("ANTIAIMARK_REWRITE_API_KEY"),
 		strength:        strength,
 		lang:            lang,
 		originalLang:    originalLang,

@@ -3,87 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>watermarks-remover web</title>
+<title>Watermark Remover</title>
 <style>
-  :root { --bg:#0f1115; --panel:#1a1d24; --border:#2a2f3a; --fg:#e6e9ef; --muted:#9aa3b2; --accent:#4f8cff; --good:#3ecf6e; --warn:#ffb454; --bad:#ff5f6d; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--fg); }
-  header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
-  header h1 { font-size:18px; margin:0; font-weight:600; }
+  :root {
+    --bg:#f6f7fb; --panel:#ffffff; --border:#e5e8f0; --fg:#1c2130; --muted:#6b7385;
+    --accent:#5b6cff; --accent2:#9a55ff; --grad:linear-gradient(135deg,#5b6cff,#9a55ff);
+    --good:#16a34a; --good-bg:#e9f9ef; --warn:#d97706; --warn-bg:#fdf3e3; --bad:#dc2626; --bad-bg:#fdeaea;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--fg); min-height:100vh; }
+
+  header { background:var(--panel); border-bottom:1px solid var(--border); padding:14px 28px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:5; }
+  .logo { width:34px; height:34px; border-radius:10px; background:var(--grad); display:flex; align-items:center; justify-content:center; font-size:17px; }
+  header h1 { font-size:17px; margin:0; font-weight:700; background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
   header .badge { font-size:12px; color:var(--muted); flex:1; }
-  header select { background:var(--panel); color:var(--fg); border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:13px; }
-  main { max-width:960px; margin:24px auto; padding:0 20px; }
-  .drop { border:2px dashed var(--border); border-radius:12px; padding:48px 20px; text-align:center; cursor:pointer; transition:border-color .15s; background:var(--panel); }
-  .drop:hover, .drop.drag { border-color: var(--accent); }
-  .drop p { margin:8px 0 0; color:var(--muted); font-size:14px; }
-  .drop .big { font-size:16px; color:var(--fg); }
-  .opts { display:flex; flex-wrap:wrap; gap:16px; margin:16px 0; color:var(--muted); font-size:14px; }
-  .opts label { display:flex; align-items:center; gap:6px; cursor:pointer; }
-  .row { display:flex; gap:20px; flex-wrap:wrap; margin-top:20px; }
-  .col { flex:1 1 420px; min-width:320px; }
-  .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px; }
-  .panel h3 { margin:0 0 12px; font-size:15px; }
-  pre { background:#0d0f13; border:1px solid var(--border); border-radius:8px; padding:12px; overflow:auto; max-height:360px; font-size:12px; line-height:1.5; color:var(--fg); white-space:pre-wrap; word-break:break-word; }
-  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:600; margin-left:8px; }
-  .pill.ok { background:rgba(62,207,110,.15); color:var(--good); }
-  .pill.bad { background:rgba(255,95,109,.15); color:var(--bad); }
-  .btn { display:inline-block; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; }
-  .btn:disabled { opacity:.5; cursor:not-allowed; }
-  .btn.secondary { background:var(--border); color:var(--fg); }
-  .meta { font-size:13px; color:var(--muted); margin:8px 0 0; }
-  #preview { max-width:100%; max-height:300px; border-radius:8px; border:1px solid var(--border); margin-top:10px; }
-  .actions { display:flex; gap:10px; align-items:center; margin-top:12px; }
-  .err { color:var(--bad); font-size:14px; margin-top:12px; }
-  .status { color:var(--muted); font-size:13px; margin-top:12px; }
-  .finding { padding:3px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  header select { background:var(--panel); color:var(--fg); border:1px solid var(--border); border-radius:999px; padding:6px 14px; font-size:13px; cursor:pointer; }
+
+  main { max-width:880px; margin:0 auto; padding:36px 20px 60px; }
+  .hero { text-align:center; margin-bottom:26px; }
+  .hero h2 { font-size:26px; margin:0 0 8px; font-weight:800; background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p { margin:0; color:var(--muted); font-size:14.5px; }
+
+  .drop { border:2px dashed #cdd3e6; border-radius:20px; padding:56px 24px; text-align:center; cursor:pointer; transition:all .18s; background:var(--panel); box-shadow:0 1px 3px rgba(28,33,48,.05); }
+  .drop:hover, .drop.drag { border-color:transparent; background:linear-gradient(var(--panel),var(--panel)) padding-box, var(--grad) border-box; border:2px solid transparent; box-shadow:0 8px 28px rgba(91,108,255,.16); }
+  .drop .icon { font-size:40px; margin-bottom:10px; }
+  .drop .big { font-size:17px; font-weight:600; }
+  .filename { margin-top:10px; font-size:14px; font-weight:600; color:var(--accent); word-break:break-all; }
+  .formats { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:16px; }
+  .chip { display:inline-flex; align-items:center; gap:6px; background:var(--panel); border:1px solid var(--border); border-radius:999px; padding:5px 13px; font-size:12.5px; color:var(--muted); }
+  .chip .cat { font-weight:700; color:var(--fg); }
+
+  details.adv { margin:18px 0 0; background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+  details.adv summary { padding:14px 20px; font-size:14.5px; font-weight:600; cursor:pointer; color:var(--muted); user-select:none; list-style:none; display:flex; align-items:center; gap:8px; }
+  details.adv summary::before { content:"▸"; transition:transform .15s; font-size:12px; }
+  details.adv[open] summary::before { transform:rotate(90deg); }
+  .adv-body { padding:4px 20px 18px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px){ .adv-body { grid-template-columns:1fr; } }
+  .opt { padding:4px 0; }
+  .opt label.head { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer; }
+  .opt input[type=checkbox] { accent-color:var(--accent); width:16px; height:16px; }
+  .opt .hint { font-size:12.5px; color:var(--muted); margin:4px 0 0 24px; line-height:1.45; }
+  .opt select { margin-top:6px; margin-left:24px; border:1px solid var(--border); border-radius:8px; padding:5px 10px; font-size:13px; background:var(--panel); color:var(--fg); }
+
+  .actions { display:flex; gap:12px; align-items:center; justify-content:center; margin-top:26px; flex-wrap:wrap; }
+  .btn { display:inline-flex; align-items:center; gap:8px; border:none; border-radius:999px; padding:13px 34px; font-size:15px; font-weight:700; cursor:pointer; text-decoration:none; }
+  .btn.primary { background:var(--grad); color:#fff; box-shadow:0 4px 16px rgba(91,108,255,.35); transition:transform .12s, box-shadow .12s; }
+  .btn.primary:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 22px rgba(91,108,255,.45); }
+  .btn:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .btn.secondary { background:var(--panel); color:var(--accent); border:1.5px solid var(--accent); }
+
+  .status { text-align:center; color:var(--muted); font-size:13.5px; margin-top:14px; }
+  .err { text-align:center; color:var(--bad); font-size:14px; margin-top:14px; }
+
+  .progress { max-width:420px; margin:12px auto 0; height:8px; border-radius:999px; background:#e8eaf3; overflow:hidden; }
+  .progress .bar { height:100%; width:0%; background:var(--grad); border-radius:999px; transition:width .15s; }
+  .banner { max-width:680px; margin:20px auto 0; border-radius:14px; padding:14px 18px; font-size:14.5px; font-weight:600; text-align:center; }
+  .banner.ok { background:var(--good-bg); color:var(--good); }
+  .banner.warn { background:var(--warn-bg); color:var(--warn); }
+
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:26px; }
+  @media (max-width:760px){ .row { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:18px 20px; box-shadow:0 1px 3px rgba(28,33,48,.04); }
+  .panel h3 { margin:0 0 12px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .pill { display:inline-block; padding:3px 12px; border-radius:999px; font-size:12px; font-weight:700; }
+  .pill.ok { background:var(--good-bg); color:var(--good); }
+  .pill.bad { background:var(--bad-bg); color:var(--bad); }
+  .finding { padding:7px 0; border-bottom:1px solid var(--border); font-size:13.5px; display:flex; align-items:center; }
   .finding:last-child { border-bottom:none; }
-  .conf { font-size:11px; border-radius:4px; padding:1px 6px; margin-right:6px; }
-  .conf.confirmed { background:rgba(255,95,109,.2); color:var(--bad); }
-  .conf.probable { background:rgba(255,180,84,.2); color:var(--warn); }
-  .conf.informational { background:rgba(154,163,178,.2); color:var(--muted); }
-  .conf.likely_false_positive { background:rgba(154,163,178,.2); color:var(--muted); }
+  .meta { font-size:13px; color:var(--muted); }
+  pre { background:#f2f3f9; border:1px solid var(--border); border-radius:10px; padding:12px; overflow:auto; max-height:320px; font-size:12px; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+  .conf { font-size:11px; border-radius:6px; padding:2px 7px; margin-right:8px; flex-shrink:0; }
+  .conf.confirmed { background:var(--bad-bg); color:var(--bad); }
+  .conf.probable { background:var(--warn-bg); color:var(--warn); }
+  .conf.informational, .conf.likely_false_positive { background:#eef0f6; color:var(--muted); }
+  #preview { max-width:100%; max-height:300px; border-radius:12px; border:1px solid var(--border); margin:18px auto 0; }
+  #previewVideo { max-width:100%; max-height:320px; border-radius:12px; margin:18px auto 0; }
+  [hidden] { display:none !important; }
 </style>
 </head>
 <body>
 <header>
-  <h1>watermarks-remover</h1>
-  <span class="badge" id="version"></span>
+  <div class="logo">🧹</div>
+  <h1 id="brandTitle"></h1>
+  <span style="flex:1"></span>
   <label for="lang" id="langLabel" style="font-size:13px;color:var(--muted)"></label>
   <select id="lang"></select>
 </header>
 <main>
+  <div class="hero">
+    <h2 id="heroTitle"></h2>
+    <p data-i18n="web.subtitle"></p>
+  </div>
   <div class="drop" id="drop">
+    <div class="icon">🖼️</div>
     <div class="big" data-i18n="web.drop_big"></div>
-    <p data-i18n="web.drop_hint"></p>
+    <div class="formats">
+      <span class="chip">🖼️ <span class="cat" data-i18n="web.fmt_images_cat"></span>&nbsp;png / jpg / webp / svg</span>
+      <span class="chip">🎬 <span class="cat" data-i18n="web.fmt_video_cat"></span>&nbsp;mp4 / mov / webm / mkv / avi …</span>
+      <span class="chip">🎵 <span class="cat" data-i18n="web.fmt_audio_cat"></span>&nbsp;mp3 / flac / wav / m4a …</span>
+      <span class="chip">📄 <span class="cat" data-i18n="web.fmt_docs_cat"></span>&nbsp;pdf / docx / odt</span>
+      <span class="chip">📝 <span class="cat" data-i18n="web.fmt_text_cat"></span>&nbsp;txt / md / html</span>
+    </div>
+    <div class="filename" id="filename" hidden></div>
   </div>
   <input type="file" id="file" hidden>
-  <div class="opts">
-    <label><input type="checkbox" id="opt-nfkc"> <span data-i18n="web.opt_nfkc"></span></label>
-    <label><input type="checkbox" id="opt-aggr"> <span data-i18n="web.opt_aggressive"></span></label>
-    <label><input type="checkbox" id="opt-layer-a" checked> <span data-i18n="web.opt_layer_a"></span></label>
-    <label><input type="checkbox" id="opt-strip-all" checked> <span data-i18n="web.opt_strip_all"></span></label>
-    <label><span data-i18n="web.opt_pixel"></span> <select id="opt-pixel"><option value="" data-i18n="web.opt_pixel_off"></option><option value="ctrlregen">CtrlRegen</option><option value="diffusion">MarkDiffusion</option></select></label>
-  </div>
+
+  <details class="adv" id="advanced">
+    <summary data-i18n="web.advanced"></summary>
+    <div class="adv-body">
+      <div class="opt">
+        <label class="head"><input type="checkbox" id="opt-nfkc"> <span data-i18n="web.opt_nfkc"></span></label>
+        <div class="hint" data-i18n="web.opt_nfkc_hint"></div>
+      </div>
+      <div class="opt">
+        <label class="head"><input type="checkbox" id="opt-aggr"> <span data-i18n="web.opt_aggressive"></span></label>
+        <div class="hint" data-i18n="web.opt_aggressive_hint"></div>
+      </div>
+      <div class="opt">
+        <label class="head"><input type="checkbox" id="opt-layer-a" checked> <span data-i18n="web.opt_layer_a"></span></label>
+        <div class="hint" data-i18n="web.opt_layer_a_hint"></div>
+      </div>
+      <div class="opt">
+        <label class="head"><input type="checkbox" id="opt-strip-all" checked> <span data-i18n="web.opt_strip_all"></span></label>
+        <div class="hint" data-i18n="web.opt_strip_all_hint"></div>
+      </div>
+      <div class="opt" style="grid-column:1 / -1;">
+        <label class="head" for="opt-pixel"><span data-i18n="web.opt_pixel"></span></label>
+        <div class="hint" data-i18n="web.opt_pixel_hint" id="pixelHint"></div>
+        <select id="opt-pixel">
+          <option value="" data-i18n="web.opt_pixel_off"></option>
+          <option value="ctrlregen">CtrlRegen</option>
+          <option value="diffusion">MarkDiffusion</option>
+        </select>
+      </div>
+    </div>
+  </details>
+
   <div class="actions">
-    <button class="btn" id="run" disabled data-i18n="web.run"></button>
+    <button class="btn primary" id="run" disabled data-i18n="web.run"></button>
     <a class="btn secondary" id="download" hidden data-i18n="web.download"></a>
+    <a id="openTab" hidden style="font-size:13px;color:var(--accent);text-decoration:none;" target="_blank" rel="noopener"></a>
   </div>
   <div class="status" id="status"></div>
+  <div class="progress" id="progress" hidden><div class="bar" id="progressBar"></div></div>
+  <div class="banner" id="banner" hidden></div>
   <div class="err" id="error"></div>
 
   <div class="row">
-    <div class="col">
-      <div class="panel" id="inspectPanel" hidden>
-        <h3><span data-i18n="web.inspect_title"></span> <span id="inspectPill" class="pill"></span></h3>
-        <div id="inspectList"></div>
-        <pre id="inspectJson" hidden></pre>
-      </div>
+    <div class="panel" id="inspectPanel" hidden>
+      <h3><span data-i18n="web.inspect_title"></span> <span id="inspectPill" class="pill"></span></h3>
+      <div id="inspectList"></div>
+      <pre id="inspectJson" hidden></pre>
     </div>
-    <div class="col">
-      <div class="panel" id="cleanPanel" hidden>
-        <h3><span data-i18n="web.clean_title"></span> <span id="cleanPill" class="pill"></span></h3>
-        <pre id="cleanJson"></pre>
-      </div>
+    <div class="panel" id="cleanPanel" hidden>
+      <h3><span data-i18n="web.clean_title"></span></h3>
+      <pre id="cleanJson"></pre>
     </div>
   </div>
   <img id="preview" alt="" hidden>
@@ -108,6 +182,8 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
   $('langLabel').textContent = tr('web.language');
   document.title = tr('web.title');
+  $('brandTitle').textContent = tr('web.title');
+  $('heroTitle').textContent = tr('web.title');
   if ($('run').textContent !== tr('web.run') && $('run').disabled === false) $('run').textContent = tr('web.run');
 }
 
@@ -145,10 +221,12 @@ drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('
 fileInput.addEventListener('change', () => { if (fileInput.files.length) selectFile(fileInput.files[0]); });
 
 function selectFile(f) {
-  selectedFile = f; originalName = f.name; downloadToken = null;
-  $('download').hidden = true;
+  selectedFile = f; originalName = f.name; downloadToken = null; cleanedBlob = null; cleanedURL = null;
+  $('download').hidden = true; $('openTab').hidden = true;
   $('inspectPanel').hidden = true; $('cleanPanel').hidden = true;
+  $('banner').hidden = true; $('progress').hidden = true; $('progressBar').style.width = '0%';
   $('error').textContent = ''; $('status').textContent = tr('web.selected', f.name, (f.size/1024).toFixed(1));
+  $('filename').hidden = false; $('filename').textContent = f.name;
   $('run').disabled = false;
   $('preview').hidden = true; $('previewVideo').hidden = true;
   if (f.type.startsWith('image/')) {
@@ -158,10 +236,31 @@ function selectFile(f) {
   }
 }
 
+// upload with progress via XHR (fetch has no upload progress events)
+function uploadWithProgress(fd, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload');
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable) onProgress(Math.round(e.loaded / e.total * 100));
+    });
+    xhr.addEventListener('load', () => {
+      let body = null;
+      try { body = JSON.parse(xhr.responseText); } catch (_) {}
+      if (xhr.status >= 200 && xhr.status < 300 && body && body.ok) resolve(body);
+      else reject(new Error((body && body.error) || ('HTTP ' + xhr.status)));
+    });
+    xhr.addEventListener('error', () => reject(new Error('network error')));
+    xhr.send(fd);
+  });
+}
+
 $('run').addEventListener('click', async () => {
   if (!selectedFile) return;
   const btn = $('run'); btn.disabled = true; btn.textContent = tr('web.running');
-  $('error').textContent = ''; $('status').textContent = tr('web.uploading');
+  $('error').textContent = ''; $('banner').hidden = true;
+  $('progress').hidden = false; $('progressBar').style.width = '0%';
+  $('status').textContent = tr('web.progress_upload', 0);
   const fd = new FormData();
   fd.append('file', selectedFile);
   const opts = {};
@@ -173,27 +272,74 @@ $('run').addEventListener('click', async () => {
   if (px) opts.remove_pixel = px;
   fd.append('options', JSON.stringify(opts));
   try {
-    const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    const body = await res.json();
-    if (!res.ok || !body.ok) throw new Error(body.error || ('HTTP ' + res.status));
+    const body = await uploadWithProgress(fd, pct => {
+      $('progressBar').style.width = pct + '%';
+      $('status').textContent = tr('web.progress_upload', pct);
+    });
+    $('progressBar').style.width = '100%';
+    $('status').textContent = tr('web.progress_server');
     downloadToken = body.download_token;
     renderResults(body);
   } catch (e) {
     $('error').textContent = tr('web.failed', e.message);
   } finally {
     btn.disabled = false; btn.textContent = tr('web.run');
+    setTimeout(() => { $('progress').hidden = true; }, 800);
+  }
+});
+
+let cleanedBlob = null, cleanedURL = null;
+
+// fetch the cleaned file as a Blob (consumes the one-shot token), then cache it
+async function fetchCleaned() {
+  if (cleanedBlob) return cleanedBlob;
+  const res = await fetch('/api/download/' + downloadToken);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  cleanedBlob = await res.blob();
+  return cleanedBlob;
+}
+
+// programmatic blob download works even in webviews that block navigational downloads
+$('download').addEventListener('click', async e => {
+  e.preventDefault();
+  const a = $('download');
+  a.style.opacity = '.6';
+  try {
+    const blob = await fetchCleaned();
+    if (cleanedURL) URL.revokeObjectURL(cleanedURL);
+    cleanedURL = URL.createObjectURL(blob);
+    const tmp = document.createElement('a');
+    tmp.href = cleanedURL;
+    tmp.download = 'cleaned-' + originalName;
+    document.body.appendChild(tmp);
+    tmp.click();
+    tmp.remove();
+    $('openTab').href = cleanedURL;
+  } catch (err) {
+    $('error').textContent = tr('web.download_failed', err.message);
+  } finally {
+    a.style.opacity = '';
   }
 });
 
 function renderResults(body) {
   $('status').textContent = tr('web.done', body.name, body.kind, body.bytes_in, body.bytes_out);
+  const report = body.report || {};
+  const hits = report.hits || report.findings || [];
+  const banner = $('banner');
+  if (body.suspicious) {
+    banner.className = 'banner warn';
+    banner.textContent = '⚠ ' + tr('web.detected_banner', hits.length);
+  } else {
+    banner.className = 'banner ok';
+    banner.textContent = '✓ ' + tr('web.clean_banner');
+  }
+  banner.hidden = false;
   const insp = $('inspectPanel'), pill = $('inspectPill');
   insp.hidden = false;
   pill.className = 'pill ' + (body.suspicious ? 'bad' : 'ok');
   pill.textContent = body.suspicious ? tr('web.suspicious') : tr('web.clean');
   const list = $('inspectList'); list.innerHTML = '';
-  const report = body.report || {};
-  const hits = report.hits || report.findings || [];
   if (!hits.length) list.innerHTML = '<div class="meta">' + tr('web.no_findings') + '</div>';
   hits.forEach(h => {
     const div = document.createElement('div'); div.className = 'finding';
@@ -207,8 +353,12 @@ function renderResults(body) {
   $('cleanJson').textContent = JSON.stringify(body.clean_report || {}, null, 2);
   const dl = $('download');
   dl.hidden = false;
-  dl.href = '/api/download/' + downloadToken;
+  dl.href = '#';
   dl.setAttribute('download', 'cleaned-' + originalName);
+  const ot = $('openTab');
+  ot.hidden = false;
+  ot.textContent = tr('web.download_open');
+  banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // boot: saved language > browser language > server default
@@ -216,11 +366,21 @@ function renderResults(body) {
   const saved = localStorage.getItem('wm-lang');
   const nav = (navigator.language || 'en').split('-')[0];
   await setLang(saved || nav);
+  // pixel backends: disable unavailable ones and show install guidance
   fetch('/capabilities').then(r => r.json()).then(c => {
-    const t = c.tools || {};
-    const present = ['c2patool','exiftool','qpdf'].filter(k => t[k]);
-    $('version').textContent = 'v' + c.version + ' · ' + tr('web.tools') + ': ' + (present.join(', ') || tr('web.none'));
-  }).catch(() => { $('version').textContent = tr('web.unreachable'); });
+    const px = (c.pixel_backends) || {};
+    const sel = $('opt-pixel'), hint = document.getElementById('pixelHint');
+    const anyBackend = px.ctrlregen || px.diffusion;
+    sel.querySelectorAll('option[value]').forEach(o => {
+      const avail = px[o.value];
+      o.disabled = !avail;
+      o.textContent = o.textContent.replace(/ ✗$/, '') + (avail ? '' : ' ✗');
+    });
+    if (!anyBackend) {
+      sel.disabled = true;
+      if (hint) hint.textContent = tr('web.opt_pixel_unavail');
+    }
+  }).catch(() => {});
 })();
 </script>
 </body>

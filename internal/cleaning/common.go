@@ -1,5 +1,5 @@
 // Package cleaning is a faithful Go port of the Python `service/scripts`
-// pipeline from the watermarks-remover project. It strips multi-vendor AI
+// pipeline from the antiaimark project. It strips multi-vendor AI
 // provenance marks (Unicode, C2PA/EXIF/XMP, containers) from text and files.
 package cleaning
 
@@ -16,15 +16,15 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"watermarks-remover/internal/i18n"
+	"antiaimark/internal/i18n"
 )
 
 // Hard caps on attacker-influenced input sizes. Whole-file in-memory
 // processing means a 1 GiB default is a host-memory DoS; keep defaults low.
 // The env overrides remain as an explicit escape hatch.
 var (
-	MaxInputBytes = envInt("WATERMARKS_MAX_INPUT_BYTES", 256<<20)
-	MaxStdinBytes = envInt("WATERMARKS_MAX_STDIN_BYTES", 64<<20)
+	MaxInputBytes = envInt("ANTIAIMARK_MAX_INPUT_BYTES", 256<<20)
+	MaxStdinBytes = envInt("ANTIAIMARK_MAX_STDIN_BYTES", 64<<20)
 )
 
 func envInt(key string, def int) int {
@@ -74,6 +74,8 @@ var binaryMagic = []struct {
 	{[]byte("MM\x00*"), "binary.tiff"},
 	{[]byte("RIFF"), "binary.riff"},
 	{[]byte("OggS"), "binary.ogg"},
+	{[]byte("ID3"), "binary.mp3"},
+	{[]byte("fLaC"), "binary.flac"},
 	{[]byte("\x1f\x8b"), "binary.gzip"},
 	{[]byte("BZh"), "binary.bzip2"},
 	{[]byte("\xfd7zXZ\x00"), "binary.xz"},

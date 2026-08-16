@@ -1,4 +1,4 @@
-module watermarks-remover
+module antiaimark
 
 go 1.24
 

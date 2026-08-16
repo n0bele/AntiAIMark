@@ -121,7 +121,7 @@ func TestI18nEndpoint(t *testing.T) {
 	if len(body.Languages) != 5 {
 		t.Fatalf("languages = %v", body.Languages)
 	}
-	if !strings.Contains(body.Messages["web.title"], "watermarks") {
+	if !strings.Contains(body.Messages["web.title"], "filigranes") {
 		t.Fatalf("messages[web.title] = %q", body.Messages["web.title"])
 	}
 }

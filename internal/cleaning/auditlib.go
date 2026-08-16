@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"watermarks-remover/internal/i18n"
+	"antiaimark/internal/i18n"
 )
 
 // TextHitConfidence mirrors text_hit_confidence: Layer A space homoglyphs are

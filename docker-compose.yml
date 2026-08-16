@@ -1,4 +1,4 @@
-# watermarks-remover (Go) — production-ish local deployment.
+# antiaimark (Go) — production-ish local deployment.
 #
 #   docker compose up -d          # build + start on 127.0.0.1:8765
 #
@@ -6,24 +6,24 @@
 # this one); defaults mirror the bare-metal defaults.
 
 services:
-  watermarks-remover:
+  antiaimark:
     build: .
-    image: watermarks-remover:latest
-    container_name: watermarks-remover
+    image: antiaimark:latest
+    container_name: antiaimark
     restart: unless-stopped
     # Loopback-only by default; change the host side for trusted networks.
     ports:
-      - "${WATERMARKS_BIND:-127.0.0.1}:${WATERMARKS_PORT:-8765}:8765"
+      - "${ANTIAIMARK_BIND:-127.0.0.1}:${ANTIAIMARK_PORT:-8765}:8765"
     environment:
-      WATERMARKS_SERVER_VERSION: "${WATERMARKS_SERVER_VERSION:-docker}"
-      WATERMARKS_SERVER_API_KEY: "${WATERMARKS_SERVER_API_KEY:-}"
-      WATERMARKS_SERVER_HOST: "0.0.0.0"
-      WATERMARKS_SERVER_PORT: "8765"
-      WATERMARKS_LANG: "${WATERMARKS_LANG:-}"
-      WATERMARKS_AUTO_CLEAN: "${WATERMARKS_AUTO_CLEAN:-0}"
-      WATERMARKS_AUTO_CLEAN_INTERVAL: "${WATERMARKS_AUTO_CLEAN_INTERVAL:-15m}"
-      WATERMARKS_AUTO_CLEAN_THRESHOLD: "${WATERMARKS_AUTO_CLEAN_THRESHOLD:-11}"
-      WATERMARKS_AUTO_CLEAN_TTL: "${WATERMARKS_AUTO_CLEAN_TTL:-24h}"
+      ANTIAIMARK_SERVER_VERSION: "${ANTIAIMARK_SERVER_VERSION:-docker}"
+      ANTIAIMARK_SERVER_API_KEY: "${ANTIAIMARK_SERVER_API_KEY:-}"
+      ANTIAIMARK_SERVER_HOST: "0.0.0.0"
+      ANTIAIMARK_SERVER_PORT: "8765"
+      ANTIAIMARK_LANG: "${ANTIAIMARK_LANG:-}"
+      ANTIAIMARK_AUTO_CLEAN: "${ANTIAIMARK_AUTO_CLEAN:-0}"
+      ANTIAIMARK_AUTO_CLEAN_INTERVAL: "${ANTIAIMARK_AUTO_CLEAN_INTERVAL:-15m}"
+      ANTIAIMARK_AUTO_CLEAN_THRESHOLD: "${ANTIAIMARK_AUTO_CLEAN_THRESHOLD:-11}"
+      ANTIAIMARK_AUTO_CLEAN_TTL: "${ANTIAIMARK_AUTO_CLEAN_TTL:-24h}"
     read_only: true
     tmpfs:
       - /tmp

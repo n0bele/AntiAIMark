@@ -31,8 +31,8 @@ import (
 	"strings"
 	"time"
 
-	"watermarks-remover/internal/cleaning"
-	"watermarks-remover/internal/cliutil"
+	"antiaimark/internal/cleaning"
+	"antiaimark/internal/cliutil"
 )
 
 const (

@@ -48,6 +48,8 @@ func InspectContainer(path string) (ContainerInspectReport, error) {
 	default:
 		if isVideoFormat(fmt) {
 			hasC2pa, hasAI, findings, details = inspectVideo(data, fmt)
+		} else if isAudioFormat(fmt) {
+			hasC2pa, hasAI, findings, details = inspectAudio(data, fmt)
 		} else {
 			hasC2pa, hasAI, findings = false, false, []string{"unsupported container: " + fmt}
 			details = map[string]interface{}{"unsupported": true}
@@ -61,6 +63,8 @@ func InspectContainer(path string) (ContainerInspectReport, error) {
 		notes = append(notes, "DOCX: only metadata/provenance parts are scanned; visible body text is ignored")
 	} else if isVideoFormat(fmt) {
 		notes = append(notes, "video inspection is best-effort (Go web extension)")
+	} else if isAudioFormat(fmt) {
+		notes = append(notes, "audio inspection is best-effort (Go web extension)")
 	}
 	if unsupported, _ := details["unsupported"].(bool); unsupported {
 		notes = append(notes, "format not fully inspected: "+fmt)
@@ -169,6 +173,15 @@ func CleanContainer(src, dest string, opts CleanContainerOptions) (map[string]in
 	default:
 		if isVideoFormat(fmt) {
 			a, metaExtra, err := cleanVideo(src, dest, fmt)
+			if err != nil {
+				return nil, err
+			}
+			actions = a
+			for k, v := range metaExtra {
+				meta[k] = v
+			}
+		} else if isAudioFormat(fmt) {
+			a, metaExtra, err := cleanAudio(src, dest, fmt)
 			if err != nil {
 				return nil, err
 			}

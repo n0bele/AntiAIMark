@@ -8,17 +8,17 @@ import (
 	"flag"
 	"os"
 
-	"watermarks-remover/internal/cleaning"
-	"watermarks-remover/internal/i18n"
+	"antiaimark/internal/cleaning"
+	"antiaimark/internal/i18n"
 )
 
 // AddLangFlag registers the shared -lang flag on the default FlagSet.
 // Pass its value to Init after parsing.
 func AddLangFlag(p *string) {
-	flag.StringVar(p, "lang", "", "UI language: en|zh|es|fr|ru (default: $WATERMARKS_LANG, then system locale)")
+	flag.StringVar(p, "lang", "", "UI language: en|zh|es|fr|ru (default: $ANTIAIMARK_LANG, then system locale)")
 }
 
-// Init applies locale resolution (--lang override > WATERMARKS_LANG > system
+// Init applies locale resolution (--lang override > ANTIAIMARK_LANG > system
 // locale > English). Call once after flag parsing, before any output.
 func Init(langOverride string) {
 	i18n.SetLocale(i18n.Detect(langOverride))

@@ -1,8 +1,8 @@
-# watermarks-remover (Go)
+# antiaimark (Go)
 
 **English** | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Français](README.fr.md) | [Русский](README.ru.md)
 
-Detect and strip AI provenance marks from text, images, documents and videos —
+Detect and strip AI provenance marks from text, images, documents, videos and audio —
 invisible Unicode steganography, C2PA/EXIF/XMP image metadata, container
 metadata (PDF, DOCX, ODT, SVG, HTML, Markdown, best-effort video) — with
 CLIs, an HTTP service + web UI, an MCP server for AI IDEs, and background
@@ -16,13 +16,16 @@ auto-clean. Pure Go, static binaries, no runtime dependencies.
   `digitalSourceType=trainedAlgorithmicMedia`, generator text chunks; pixel data untouched
 - **Containers** — PDF (exiftool + qpdf when available), DOCX/ODT internals,
   SVG metadata blocks, HTML meta/JSON-LD, Markdown frontmatter
-- **Video** — best-effort: C2PA uuid/JUMBF box scan, QuickTime `©too` atom,
-  marker scan, `exiftool -all=` strip
+- **Video & audio** — best-effort: C2PA uuid/JUMBF box scan, QuickTime `©too` atom,
+  marker scan (Suno/ElevenLabs/MusicGen…), `exiftool -all=` strip
 - **Vendor keywords** — OpenAI/Imagen/Firefly/Midjourney/Stable Diffusion/
   FLUX/Ideogram/Recraft/Grok + 豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺…
   (CMS tags like WordPress are preserved)
 - **HTTP + web UI** — JSON API (`/inspect` `/clean`), drag & drop upload with
   one-shot download for images and videos
+
+![The web UI (English):](docs/screenshot-en.png)
+
 - **MCP server** — native tools inside Claude Code/Desktop, Cursor, Windsurf, Cline, Continue, Zed…
 - **5 languages** — en / zh / es / fr / ru across CLIs, HTTP errors, web UI and MCP descriptions
 - **Background auto-clean** — disk-space threshold, configurable period
@@ -33,7 +36,7 @@ auto-clean. Pure Go, static binaries, no runtime dependencies.
 go build ./...          # build everything
 go test ./...           # run the suite
 ./deploy.sh build       # or: build all 12 binaries into bin/
-./bin/watermarks-server # HTTP + web UI on 127.0.0.1:8765
+./bin/antiaimark-server # HTTP + web UI on 127.0.0.1:8765
 ```
 
 Open http://127.0.0.1:8765/ and drag an image or video in. CLI examples:
@@ -63,10 +66,10 @@ Bare-metal flow on a linux server:
 
 ```bash
 ./deploy.sh package amd64                  # on your workstation
-scp dist/watermarks-remover-*-linux-amd64.tar.gz server:
-ssh server 'tar xzf watermarks-remover-*.tar.gz && cd watermarks-remover && sudo ./deploy.sh install-systemd'
-# configure: sudoedit /etc/watermarks-remover.env   (port, API key, auto-clean…)
-sudo systemctl restart watermarks-remover
+scp dist/antiaimark-*-linux-amd64.tar.gz server:
+ssh server 'tar xzf antiaimark-*.tar.gz && cd antiaimark && sudo ./deploy.sh install-systemd'
+# configure: sudoedit /etc/antiaimark.env   (port, API key, auto-clean…)
+sudo systemctl restart antiaimark
 ```
 
 Docker alternative: `docker compose up -d` (loopback bind, healthcheck,
@@ -76,14 +79,14 @@ read-only rootfs, dropped capabilities; knobs via environment).
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `WATERMARKS_SERVER_HOST` | `127.0.0.1` | bind address (loopback-only unless behind a proxy) |
-| `WATERMARKS_SERVER_PORT` | `8765` | port |
-| `WATERMARKS_SERVER_API_KEY` | empty | require `Authorization: Bearer <key>` when set |
-| `WATERMARKS_LANG` | system locale | `en` `zh` `es` `fr` `ru` |
-| `WATERMARKS_AUTO_CLEAN` | `0` | `1` enables the background janitor |
-| `WATERMARKS_AUTO_CLEAN_INTERVAL` | `15m` | check period |
-| `WATERMARKS_AUTO_CLEAN_THRESHOLD` | `11` | free-space % that triggers cleanup |
-| `WATERMARKS_AUTO_CLEAN_TTL` | `24h` | download retention before eviction |
+| `ANTIAIMARK_SERVER_HOST` | `127.0.0.1` | bind address (loopback-only unless behind a proxy) |
+| `ANTIAIMARK_SERVER_PORT` | `8765` | port |
+| `ANTIAIMARK_SERVER_API_KEY` | empty | require `Authorization: Bearer <key>` when set |
+| `ANTIAIMARK_LANG` | system locale | `en` `zh` `es` `fr` `ru` |
+| `ANTIAIMARK_AUTO_CLEAN` | `0` | `1` enables the background janitor |
+| `ANTIAIMARK_AUTO_CLEAN_INTERVAL` | `15m` | check period |
+| `ANTIAIMARK_AUTO_CLEAN_THRESHOLD` | `11` | free-space % that triggers cleanup |
+| `ANTIAIMARK_AUTO_CLEAN_TTL` | `24h` | download retention before eviction |
 
 The janitor only ever deletes this service's own `wm-*` temp directories and
 expired downloads — nothing else on disk; directories younger than 1h are
@@ -102,9 +105,9 @@ protected so in-flight requests are never disturbed.
 ## AI IDE integration (MCP)
 
 ```bash
-claude mcp add watermarks-remover -- /abs/path/to/bin/watermarks-mcp
+claude mcp add antiaimark -- /abs/path/to/bin/antiaimark-mcp
 # Cursor / Windsurf / Cline mcp.json:
-{ "mcpServers": { "watermarks-remover": { "command": "/abs/path/to/watermarks-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
 ```
 
 Tools: `capabilities`, `inspect_file`, `clean_file`, `inspect_text`,

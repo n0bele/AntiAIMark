@@ -39,6 +39,14 @@ var VideoExts = map[string]bool{
 	".mpg": true, ".mpeg": true, ".ogv": true,
 }
 
+// Audio extensions routed to the container pipeline (best-effort metadata
+// inspect + exiftool strip, same as video).
+var AudioExts = map[string]bool{
+	".mp3": true, ".wav": true, ".flac": true, ".m4a": true, ".m4b": true,
+	".aac": true, ".ogg": true, ".oga": true, ".opus": true,
+	".aiff": true, ".aif": true, ".wma": true,
+}
+
 var TextExts = map[string]bool{
 	".txt": true, ".text": true, ".css": true, ".js": true, ".py": true,
 	".rs": true, ".go": true, ".json": true, ".yaml": true, ".yml": true,
@@ -54,7 +62,7 @@ func ClassifyBytes(data []byte, suffix string) Kind {
 	if ImageExts[ext] {
 		return KindImage
 	}
-	if ContainerExts[ext] || VideoExts[ext] {
+	if ContainerExts[ext] || VideoExts[ext] || AudioExts[ext] {
 		return KindContainer
 	}
 	if TextExts[ext] {

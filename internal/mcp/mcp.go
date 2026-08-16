@@ -26,8 +26,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"watermarks-remover/internal/cleaning"
-	"watermarks-remover/internal/i18n"
+	"antiaimark/internal/cleaning"
+	"antiaimark/internal/i18n"
 )
 
 const protocolVersion = "2024-11-05"
@@ -152,7 +152,7 @@ func (s *Server) handleInitialize(params json.RawMessage) (interface{}, *rpcErro
 			"tools": map[string]interface{}{},
 		},
 		"serverInfo": map[string]interface{}{
-			"name":    "watermarks-remover",
+			"name":    "antiaimark",
 			"version": s.version,
 		},
 	}, nil

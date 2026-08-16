@@ -117,7 +117,7 @@ func openapiSpec(version, apiKey string) map[string]interface{} {
 	spec := map[string]interface{}{
 		"openapi": "3.0.3",
 		"info": map[string]interface{}{
-			"title":   "watermarks-remover service",
+			"title":   "Watermark Remover service",
 			"version": version,
 			"description": "Strip multi-vendor AI provenance marks (Unicode, C2PA/EXIF/XMP, containers). " +
 				"Files are passed base64-encoded in JSON; cleaned bytes come back base64-encoded.",

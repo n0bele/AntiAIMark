@@ -1,15 +1,17 @@
-# watermarks-remover (Go)
+# antiaimark (Go)
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Français](README.fr.md) | **Русский**
 
 Обнаруживает и удаляет метки происхождения ИИ в текстах, изображениях,
 документах и видео — невидимая стеганография Unicode, метаданные изображений
 C2PA/EXIF/XMP, метаданные контейнеров (PDF, DOCX, ODT, SVG, HTML, Markdown,
-видео best-effort) — с CLI, HTTP-сервисом + веб-интерфейсом, MCP-сервером для
+видео и аудио best-effort) — с CLI, HTTP-сервисом + веб-интерфейсом, MCP-сервером для
 ИИ-IDE и фоновой автоочисткой. Чистый Go, статические бинарники, никаких
 зависимостей времени выполнения.
 
 ## Возможности
+
+![Веб-интерфейс (русский):](docs/screenshot-ru.png)
 
 - **Текст (Слой A)** — символы нулевой ширины, bidi-управление, теговые
   символы, омоглифные пробелы, приватные планы; побайтово точный round-trip не-UTF-8 ввода
@@ -17,8 +19,8 @@ C2PA/EXIF/XMP, метаданные контейнеров (PDF, DOCX, ODT, SVG,
   `digitalSourceType=trainedAlgorithmicMedia`, текстовые блоки генератора; пиксели не трогаются
 - **Контейнеры** — PDF (exiftool + qpdf при наличии), внутренности
   DOCX/ODT, блоки метаданных SVG, meta/JSON-LD HTML, frontmatter Markdown
-- **Видео** — best-effort: скан C2PA uuid/JUMBF-боксов, атом QuickTime
-  `©too`, скан маркеров, очистка `exiftool -all=`
+- **Видео и аудио** — best-effort: скан C2PA uuid/JUMBF-боксов, атом QuickTime
+  `©too`, скан маркеров (Suno/ElevenLabs/MusicGen…), очистка `exiftool -all=`
 - **Ключевые слова вендоров** — OpenAI/Imagen/Firefly/Midjourney/Stable
   Diffusion/FLUX/Ideogram/Recraft/Grok + 豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺…
   (CMS-теги вроде WordPress сохраняются)
@@ -34,7 +36,7 @@ C2PA/EXIF/XMP, метаданные контейнеров (PDF, DOCX, ODT, SVG,
 go build ./...          # собрать всё
 go test ./...           # запустить тесты
 ./deploy.sh build       # или: все 12 бинарников в bin/
-./bin/watermarks-server # HTTP + веб на 127.0.0.1:8765
+./bin/antiaimark-server # HTTP + веб на 127.0.0.1:8765
 ```
 
 Откройте http://127.0.0.1:8765/ и перетащите изображение или видео. Примеры CLI:
@@ -64,10 +66,10 @@ go test ./...           # запустить тесты
 
 ```bash
 ./deploy.sh package amd64                  # на рабочей станции
-scp dist/watermarks-remover-*-linux-amd64.tar.gz server:
-ssh server 'tar xzf watermarks-remover-*.tar.gz && cd watermarks-remover && sudo ./deploy.sh install-systemd'
-# настройка: sudoedit /etc/watermarks-remover.env   (порт, API-ключ, автоочистка…)
-sudo systemctl restart watermarks-remover
+scp dist/antiaimark-*-linux-amd64.tar.gz server:
+ssh server 'tar xzf antiaimark-*.tar.gz && cd antiaimark && sudo ./deploy.sh install-systemd'
+# настройка: sudoedit /etc/antiaimark.env   (порт, API-ключ, автоочистка…)
+sudo systemctl restart antiaimark
 ```
 
 Альтернатива Docker: `docker compose up -d` (loopback-привязка, healthcheck,
@@ -77,14 +79,14 @@ read-only rootfs, снятые capabilities; параметры через ок�
 
 | Переменная | По умолчанию | Значение |
 | --- | --- | --- |
-| `WATERMARKS_SERVER_HOST` | `127.0.0.1` | адрес привязки (только loopback, иначе за reverse-proxy) |
-| `WATERMARKS_SERVER_PORT` | `8765` | порт |
-| `WATERMARKS_SERVER_API_KEY` | пусто | требует `Authorization: Bearer <ключ>` при установке |
-| `WATERMARKS_LANG` | язык системы | `en` `zh` `es` `fr` `ru` |
-| `WATERMARKS_AUTO_CLEAN` | `0` | `1` включает фоновый уборщик |
-| `WATERMARKS_AUTO_CLEAN_INTERVAL` | `15m` | период проверки |
-| `WATERMARKS_AUTO_CLEAN_THRESHOLD` | `11` | % свободного места, запускающий очистку |
-| `WATERMARKS_AUTO_CLEAN_TTL` | `24h` | срок хранения загрузок до выселения |
+| `ANTIAIMARK_SERVER_HOST` | `127.0.0.1` | адрес привязки (только loopback, иначе за reverse-proxy) |
+| `ANTIAIMARK_SERVER_PORT` | `8765` | порт |
+| `ANTIAIMARK_SERVER_API_KEY` | пусто | требует `Authorization: Bearer <ключ>` при установке |
+| `ANTIAIMARK_LANG` | язык системы | `en` `zh` `es` `fr` `ru` |
+| `ANTIAIMARK_AUTO_CLEAN` | `0` | `1` включает фоновый уборщик |
+| `ANTIAIMARK_AUTO_CLEAN_INTERVAL` | `15m` | период проверки |
+| `ANTIAIMARK_AUTO_CLEAN_THRESHOLD` | `11` | % свободного места, запускающий очистку |
+| `ANTIAIMARK_AUTO_CLEAN_TTL` | `24h` | срок хранения загрузок до выселения |
 
 Уборщик удаляет только собственные временные каталоги `wm-*` сервиса и
 просроченные загрузки — больше ничего на диске; каталоги моложе часа защищены,
@@ -103,9 +105,9 @@ read-only rootfs, снятые capabilities; параметры через ок�
 ## Интеграция с ИИ-IDE (MCP)
 
 ```bash
-claude mcp add watermarks-remover -- /абс/путь/к/bin/watermarks-mcp
+claude mcp add antiaimark -- /абс/путь/к/bin/antiaimark-mcp
 # mcp.json для Cursor / Windsurf / Cline:
-{ "mcpServers": { "watermarks-remover": { "command": "/абс/путь/к/watermarks-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/абс/путь/к/antiaimark-mcp" } } }
 ```
 
 Инструменты: `capabilities`, `inspect_file`, `clean_file`, `inspect_text`,

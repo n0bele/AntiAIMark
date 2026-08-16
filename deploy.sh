@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# deploy.sh — build, package and deploy watermarks-remover (Go edition).
+# deploy.sh — build, package and deploy antiaimark (Go edition).
 #
 # Works in Git Bash / WSL / Linux. Linux + root is required only for the
 # systemd commands; everything else runs unprivileged.
@@ -8,7 +8,7 @@
 #   build                  build all binaries for the host platform into bin/
 #   build-linux [arch]     cross-compile linux binaries (amd64|arm64|386)
 #   package [arch]         build a self-contained linux tarball into dist/
-#   docker-build [tag]     build the Docker image (default watermarks-remover:latest)
+#   docker-build [tag]     build the Docker image (default antiaimark:latest)
 #   docker-run [name]      run the image with production defaults
 #                          (loopback port, read-only rootfs, tmpfs /tmp, restart policy)
 #   install-systemd        install binaries + user + env file + systemd unit (Linux, root)
@@ -20,11 +20,11 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIN_DIR="$REPO_DIR/bin"
 DIST_DIR="$REPO_DIR/dist"
-IMAGE_TAG="watermarks-remover:latest"
-CONTAINER_NAME="watermarks-remover"
-SERVICE_USER="watermarks"
-SERVICE_ENV=/etc/watermarks-remover.env
-SERVICE_UNIT=/etc/systemd/system/watermarks-remover.service
+IMAGE_TAG="antiaimark:latest"
+CONTAINER_NAME="antiaimark"
+SERVICE_USER="antiaimark"
+SERVICE_ENV=/etc/antiaimark.env
+SERVICE_UNIT=/etc/systemd/system/antiaimark.service
 
 log()  { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
@@ -37,7 +37,7 @@ require_linux_root() {
 }
 
 all_cmds=(clean-text inspect-text clean-image inspect-image clean-file inspect-file
-          rewrite-text audit-dir audit-website watermarks-server watermarks-mcp healthcheck)
+          rewrite-text audit-dir audit-website antiaimark-server antiaimark-mcp healthcheck)
 
 cmd_build() {
   require_go
@@ -73,14 +73,14 @@ cmd_package() {
   cmd_build_linux "$arch"
   local version
   version="$(date +%Y%m%d)-linux-$arch"
-  local out="$DIST_DIR/watermarks-remover-$version.tar.gz"
+  local out="$DIST_DIR/antiaimark-$version.tar.gz"
   mkdir -p "$DIST_DIR"
   log "packaging $out"
   tar -czf "$out" -C "$REPO_DIR" \
-    --transform "s|^bin/linux-$arch|watermarks-remover/bin|" \
-    --transform "s|^README|watermarks-remover/README|" \
-    --transform "s|^LICENSE|watermarks-remover/LICENSE|" \
-    --transform "s|^deploy/|watermarks-remover/deploy/|" \
+    --transform "s|^bin/linux-$arch|antiaimark/bin|" \
+    --transform "s|^README|antiaimark/README|" \
+    --transform "s|^LICENSE|antiaimark/LICENSE|" \
+    --transform "s|^deploy/|antiaimark/deploy/|" \
     "bin/linux-$arch" README.md README-ARCHITECTURE.md README.zh-CN.md README.es.md README.fr.md README.ru.md LICENSE deploy/
   log "done: $out ($(du -h "$out" | cut -f1)) — scp it, then: sudo ./deploy.sh install-systemd"
 }
@@ -95,18 +95,18 @@ cmd_docker_build() {
 cmd_docker_run() {
   require_docker
   local name="${1:-$CONTAINER_NAME}"
-  local port="${WATERMARKS_PORT:-8765}"
+  local port="${ANTIAIMARK_PORT:-8765}"
   docker rm -f "$name" >/dev/null 2>&1 || true
   log "running $name on 127.0.0.1:$port (read-only rootfs, tmpfs /tmp)"
   docker run -d --name "$name" \
     --restart unless-stopped \
     -p "127.0.0.1:$port:8765" \
-    -e WATERMARKS_SERVER_API_KEY="${WATERMARKS_SERVER_API_KEY:-}" \
-    -e WATERMARKS_AUTO_CLEAN="${WATERMARKS_AUTO_CLEAN:-0}" \
-    -e WATERMARKS_AUTO_CLEAN_INTERVAL="${WATERMARKS_AUTO_CLEAN_INTERVAL:-15m}" \
-    -e WATERMARKS_AUTO_CLEAN_THRESHOLD="${WATERMARKS_AUTO_CLEAN_THRESHOLD:-11}" \
-    -e WATERMARKS_AUTO_CLEAN_TTL="${WATERMARKS_AUTO_CLEAN_TTL:-24h}" \
-    -e WATERMARKS_LANG="${WATERMARKS_LANG:-}" \
+    -e ANTIAIMARK_SERVER_API_KEY="${ANTIAIMARK_SERVER_API_KEY:-}" \
+    -e ANTIAIMARK_AUTO_CLEAN="${ANTIAIMARK_AUTO_CLEAN:-0}" \
+    -e ANTIAIMARK_AUTO_CLEAN_INTERVAL="${ANTIAIMARK_AUTO_CLEAN_INTERVAL:-15m}" \
+    -e ANTIAIMARK_AUTO_CLEAN_THRESHOLD="${ANTIAIMARK_AUTO_CLEAN_THRESHOLD:-11}" \
+    -e ANTIAIMARK_AUTO_CLEAN_TTL="${ANTIAIMARK_AUTO_CLEAN_TTL:-24h}" \
+    -e ANTIAIMARK_LANG="${ANTIAIMARK_LANG:-}" \
     --read-only --tmpfs /tmp \
     --security-opt no-new-privileges \
     --cap-drop ALL \
@@ -144,27 +144,27 @@ cmd_install_systemd() {
   if [ ! -f "$SERVICE_ENV" ]; then
     log "installing $SERVICE_ENV (edit it to configure port/API key/auto-clean)"
     install -m 0640 -o root -g "$SERVICE_USER" \
-      "$REPO_DIR/deploy/watermarks-remover.env.example" "$SERVICE_ENV"
+      "$REPO_DIR/deploy/antiaimark.env.example" "$SERVICE_ENV"
   else
     log "keeping existing $SERVICE_ENV"
   fi
 
   # 4. docs + unit
-  install -d -m 0755 /usr/local/share/watermarks-remover
-  install -m 0644 "$REPO_DIR/README.md" /usr/local/share/watermarks-remover/ 2>/dev/null || true
-  install -m 0644 "$REPO_DIR/deploy/watermarks-remover.service" "$SERVICE_UNIT"
+  install -d -m 0755 /usr/local/share/antiaimark
+  install -m 0644 "$REPO_DIR/README.md" /usr/local/share/antiaimark/ 2>/dev/null || true
+  install -m 0644 "$REPO_DIR/deploy/antiaimark.service" "$SERVICE_UNIT"
 
   # 5. enable + start
   systemctl daemon-reload
-  systemctl enable --now watermarks-remover.service
+  systemctl enable --now antiaimark.service
   sleep 1
-  systemctl --no-pager --lines 5 status watermarks-remover.service || true
-  log "service installed: systemctl status watermarks-remover"
+  systemctl --no-pager --lines 5 status antiaimark.service || true
+  log "service installed: systemctl status antiaimark"
 }
 
 cmd_uninstall_systemd() {
   require_linux_root uninstall-systemd
-  systemctl disable --now watermarks-remover.service || true
+  systemctl disable --now antiaimark.service || true
   rm -f "$SERVICE_UNIT"
   systemctl daemon-reload
   log "unit removed (binaries, user and $SERVICE_ENV kept; remove manually if desired)"
@@ -172,7 +172,7 @@ cmd_uninstall_systemd() {
 
 cmd_status() {
   require_linux_root status
-  systemctl --no-pager status watermarks-remover.service
+  systemctl --no-pager status antiaimark.service
 }
 
 cmd_help() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; }

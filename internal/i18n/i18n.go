@@ -6,7 +6,7 @@
 // Spanish (es), French (fr), Russian (ru).
 //
 // Locale resolution order: explicit SetLocale / --lang flag, then the
-// WATERMARKS_LANG environment variable, then the system locale (LANG /
+// ANTIAIMARK_LANG environment variable, then the system locale (LANG /
 // LC_ALL / LC_MESSAGES, POSIX and Windows forms), then "en". HTTP callers use
 // NegotiateAcceptLanguage on the Accept-Language header.
 package i18n
@@ -89,7 +89,7 @@ func Normalize(any string) Tag {
 	return Default
 }
 
-// Detect resolves the locale from the environment (WATERMARKS_LANG, then the
+// Detect resolves the locale from the environment (ANTIAIMARK_LANG, then the
 // system locale variables), mirroring the resolution order documented in the
 // package comment. The optional override (usually a --lang flag value) wins
 // when non-empty.
@@ -97,7 +97,7 @@ func Detect(override string) Tag {
 	if override != "" {
 		return Normalize(override)
 	}
-	if v := os.Getenv("WATERMARKS_LANG"); v != "" {
+	if v := os.Getenv("ANTIAIMARK_LANG"); v != "" {
 		return Normalize(v)
 	}
 	for _, key := range []string{"LC_ALL", "LC_MESSAGES", "LANG"} {

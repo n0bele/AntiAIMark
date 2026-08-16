@@ -1,9 +1,9 @@
-# watermarks-remover（Go 版）
+# antiaimark（Go 版）
 
 [English](README.md) | **简体中文** | [Español](README.es.md) | [Français](README.fr.md) | [Русский](README.ru.md)
 
 检测并清除文本、图片、文档与视频中的 AI 来源标记——不可见 Unicode 隐写、C2PA/EXIF/XMP
-图片元数据、容器元数据（PDF、DOCX、ODT、SVG、HTML、Markdown、视频 best-effort）——提供
+图片元数据、容器元数据（PDF、DOCX、ODT、SVG、HTML、Markdown、视频/音频 best-effort）——提供
 CLI、HTTP 服务 + 网页界面、面向 AI IDE 的 MCP 服务器，以及后台自动清理。纯 Go、静态
 编译、零运行时依赖。
 
@@ -12,10 +12,13 @@ CLI、HTTP 服务 + 网页界面、面向 AI IDE 的 MCP 服务器，以及后�
 - **文本（Layer A）**——零宽字符、双向控制符、标签字符、同形空格、私用区；非 UTF-8 输入逐字节无损往返
 - **图片**——PNG/JPEG/WebP 元数据：C2PA/JUMBF 清单、XMP `digitalSourceType=trainedAlgorithmicMedia`、生成器文本块；像素数据不动
 - **容器**——PDF（有 exiftool + qpdf 时使用）、DOCX/ODT 内部结构、SVG 元数据块、HTML meta/JSON-LD、Markdown frontmatter
-- **视频**——best-effort：C2PA uuid/JUMBF box 扫描、QuickTime `©too` 原子、标记扫描、`exiftool -all=` 剥离
+- **视频/音频**——best-effort：C2PA uuid/JUMBF box 扫描、QuickTime `©too` 原子、标记扫描（Suno/ElevenLabs/MusicGen…）、`exiftool -all=` 剥离
 - **厂商关键字**——OpenAI/Imagen/Firefly/Midjourney/Stable Diffusion/FLUX/Ideogram/Recraft/Grok +
   豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺……（WordPress 等 CMS 标签保留不删）
 - **HTTP + 网页界面**——JSON API（`/inspect` `/clean`），图片视频拖拽上传、一次性下载
+
+![网页界面（中文）：](docs/screenshot-zh.png)
+
 - **MCP 服务器**——在 Claude Code/Desktop、Cursor、Windsurf、Cline、Continue、Zed 中作为原生工具
 - **五种语言**——en/zh/es/fr/ru 覆盖 CLI、HTTP 错误、网页界面与 MCP 描述
 - **后台自动清理**——磁盘空间阈值触发，周期可配置
@@ -26,7 +29,7 @@ CLI、HTTP 服务 + 网页界面、面向 AI IDE 的 MCP 服务器，以及后�
 go build ./...          # 构建全部
 go test ./...           # 运行测试
 ./deploy.sh build       # 或者：把 12 个二进制构建到 bin/
-./bin/watermarks-server # HTTP + 网页界面，监听 127.0.0.1:8765
+./bin/antiaimark-server # HTTP + 网页界面，监听 127.0.0.1:8765
 ```
 
 打开 http://127.0.0.1:8765/，拖入图片或视频即可。CLI 示例：
@@ -56,10 +59,10 @@ Linux 服务器裸机部署流程：
 
 ```bash
 ./deploy.sh package amd64                  # 在你的工作站上打包
-scp dist/watermarks-remover-*-linux-amd64.tar.gz server:
-ssh server 'tar xzf watermarks-remover-*.tar.gz && cd watermarks-remover && sudo ./deploy.sh install-systemd'
-# 配置：sudoedit /etc/watermarks-remover.env   （端口、API key、自动清理…）
-sudo systemctl restart watermarks-remover
+scp dist/antiaimark-*-linux-amd64.tar.gz server:
+ssh server 'tar xzf antiaimark-*.tar.gz && cd antiaimark && sudo ./deploy.sh install-systemd'
+# 配置：sudoedit /etc/antiaimark.env   （端口、API key、自动清理…）
+sudo systemctl restart antiaimark
 ```
 
 Docker 备选：`docker compose up -d`（环回绑定、健康检查、只读根文件系统、降权；参数经环境变量传入）。
@@ -68,14 +71,14 @@ Docker 备选：`docker compose up -d`（环回绑定、健康检查、只读根
 
 | 变量 | 默认 | 说明 |
 | --- | --- | --- |
-| `WATERMARKS_SERVER_HOST` | `127.0.0.1` | 绑定地址（除非有反代，保持环回） |
-| `WATERMARKS_SERVER_PORT` | `8765` | 端口 |
-| `WATERMARKS_SERVER_API_KEY` | 空 | 设置后要求 `Authorization: Bearer <key>` |
-| `WATERMARKS_LANG` | 系统语言 | `en` `zh` `es` `fr` `ru` |
-| `WATERMARKS_AUTO_CLEAN` | `0` | `1` 开启后台自动清理 |
-| `WATERMARKS_AUTO_CLEAN_INTERVAL` | `15m` | 检查周期 |
-| `WATERMARKS_AUTO_CLEAN_THRESHOLD` | `11` | 触发清理的空闲空间百分比 |
-| `WATERMARKS_AUTO_CLEAN_TTL` | `24h` | 下载文件保留时长 |
+| `ANTIAIMARK_SERVER_HOST` | `127.0.0.1` | 绑定地址（除非有反代，保持环回） |
+| `ANTIAIMARK_SERVER_PORT` | `8765` | 端口 |
+| `ANTIAIMARK_SERVER_API_KEY` | 空 | 设置后要求 `Authorization: Bearer <key>` |
+| `ANTIAIMARK_LANG` | 系统语言 | `en` `zh` `es` `fr` `ru` |
+| `ANTIAIMARK_AUTO_CLEAN` | `0` | `1` 开启后台自动清理 |
+| `ANTIAIMARK_AUTO_CLEAN_INTERVAL` | `15m` | 检查周期 |
+| `ANTIAIMARK_AUTO_CLEAN_THRESHOLD` | `11` | 触发清理的空闲空间百分比 |
+| `ANTIAIMARK_AUTO_CLEAN_TTL` | `24h` | 下载文件保留时长 |
 
 自动清理只会删除本服务自己的 `wm-*` 临时目录与过期下载——不碰磁盘上其他任何文件；
 1 小时内的目录受保护，绝不干扰进行中的请求。
@@ -93,9 +96,9 @@ Docker 备选：`docker compose up -d`（环回绑定、健康检查、只读根
 ## AI IDE 接入（MCP）
 
 ```bash
-claude mcp add watermarks-remover -- /abs/path/to/bin/watermarks-mcp
+claude mcp add antiaimark -- /abs/path/to/bin/antiaimark-mcp
 # Cursor / Windsurf / Cline 的 mcp.json：
-{ "mcpServers": { "watermarks-remover": { "command": "/abs/path/to/watermarks-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
 ```
 
 工具：`capabilities`、`inspect_file`、`clean_file`、`inspect_text`、

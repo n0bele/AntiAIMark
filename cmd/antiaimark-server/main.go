@@ -1,4 +1,4 @@
-// watermarks-server: thin entrypoint for the embeddable HTTP facade.
+// antiaimark-server: thin entrypoint for the embeddable HTTP facade.
 //
 // Endpoints (Python server.py compatible):
 //
@@ -14,10 +14,10 @@
 //
 // Background auto-clean (opt-in):
 //
-//	--auto-clean              enable (or WATERMARKS_AUTO_CLEAN=1)
-//	--auto-clean-interval     check period (default 15m; env WATERMARKS_AUTO_CLEAN_INTERVAL)
-//	--auto-clean-threshold    free-space %% that triggers cleanup (default 11; env WATERMARKS_AUTO_CLEAN_THRESHOLD)
-//	--auto-clean-ttl          download retention before eviction (default 24h; env WATERMARKS_AUTO_CLEAN_TTL)
+//	--auto-clean              enable (or ANTIAIMARK_AUTO_CLEAN=1)
+//	--auto-clean-interval     check period (default 15m; env ANTIAIMARK_AUTO_CLEAN_INTERVAL)
+//	--auto-clean-threshold    free-space %% that triggers cleanup (default 11; env ANTIAIMARK_AUTO_CLEAN_THRESHOLD)
+//	--auto-clean-ttl          download retention before eviction (default 24h; env ANTIAIMARK_AUTO_CLEAN_TTL)
 //
 // Embed the same API in your own program with internal/httpapi.New(...).
 package main
@@ -32,11 +32,11 @@ import (
 	"strings"
 	"time"
 
-	"watermarks-remover/internal/cleaning"
-	"watermarks-remover/internal/cliutil"
-	"watermarks-remover/internal/httpapi"
-	"watermarks-remover/internal/i18n"
-	"watermarks-remover/internal/janitor"
+	"antiaimark/internal/cleaning"
+	"antiaimark/internal/cliutil"
+	"antiaimark/internal/httpapi"
+	"antiaimark/internal/i18n"
+	"antiaimark/internal/janitor"
 )
 
 func envOr(key, def string) string {
@@ -73,21 +73,21 @@ func envFloatOr(key string, def float64) float64 {
 }
 
 func main() {
-	hostFlag := flag.String("host", envOr("WATERMARKS_SERVER_HOST", "127.0.0.1"), "bind address")
-	portFlag := flag.String("port", envOr("WATERMARKS_SERVER_PORT", "8765"), "bind port")
-	apiKeyFlag := flag.String("api-key", strings.TrimSpace(os.Getenv("WATERMARKS_SERVER_API_KEY")), "require this bearer token (default: none)")
+	hostFlag := flag.String("host", envOr("ANTIAIMARK_SERVER_HOST", "127.0.0.1"), "bind address")
+	portFlag := flag.String("port", envOr("ANTIAIMARK_SERVER_PORT", "8765"), "bind port")
+	apiKeyFlag := flag.String("api-key", strings.TrimSpace(os.Getenv("ANTIAIMARK_SERVER_API_KEY")), "require this bearer token (default: none)")
 	versionFlag := flag.Bool("V", false, "print version and exit")
 	flag.BoolVar(versionFlag, "version", false, "print version and exit")
-	autoClean := flag.Bool("auto-clean", envBool("WATERMARKS_AUTO_CLEAN"), "enable background auto-clean: evict expired downloads, and free space by deleting this service's stale temp dirs when free disk drops below the threshold")
-	autoCleanInterval := flag.Duration("auto-clean-interval", envDurationOr("WATERMARKS_AUTO_CLEAN_INTERVAL", 15*time.Minute), "auto-clean check period")
-	autoCleanThreshold := flag.Float64("auto-clean-threshold", envFloatOr("WATERMARKS_AUTO_CLEAN_THRESHOLD", 11), "free-space percentage below which auto-clean triggers (0-100)")
-	autoCleanTTL := flag.Duration("auto-clean-ttl", envDurationOr("WATERMARKS_AUTO_CLEAN_TTL", 24*time.Hour), "download retention before eviction")
+	autoClean := flag.Bool("auto-clean", envBool("ANTIAIMARK_AUTO_CLEAN"), "enable background auto-clean: evict expired downloads, and free space by deleting this service's stale temp dirs when free disk drops below the threshold")
+	autoCleanInterval := flag.Duration("auto-clean-interval", envDurationOr("ANTIAIMARK_AUTO_CLEAN_INTERVAL", 15*time.Minute), "auto-clean check period")
+	autoCleanThreshold := flag.Float64("auto-clean-threshold", envFloatOr("ANTIAIMARK_AUTO_CLEAN_THRESHOLD", 11), "free-space percentage below which auto-clean triggers (0-100)")
+	autoCleanTTL := flag.Duration("auto-clean-ttl", envDurationOr("ANTIAIMARK_AUTO_CLEAN_TTL", 24*time.Hour), "download retention before eviction")
 	var langFlag string
 	cliutil.AddLangFlag(&langFlag)
 	flag.Parse()
 	cliutil.Init(langFlag)
 
-	version := os.Getenv("WATERMARKS_SERVER_VERSION")
+	version := os.Getenv("ANTIAIMARK_SERVER_VERSION")
 	if version == "" {
 		version = "dev"
 	}

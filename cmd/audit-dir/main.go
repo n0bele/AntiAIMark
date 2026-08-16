@@ -11,9 +11,9 @@ import (
 	"os"
 	"strings"
 
-	"watermarks-remover/internal/cleaning"
-	"watermarks-remover/internal/cliutil"
-	"watermarks-remover/internal/i18n"
+	"antiaimark/internal/cleaning"
+	"antiaimark/internal/cliutil"
+	"antiaimark/internal/i18n"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 # Architecture & extension guide
 
 (Distribution layout note: this standalone Go project was extracted from the
-watermarks-remover monorepo; references to `service/scripts/` describe the
+antiaimark monorepo; references to `service/scripts/` describe the
 optional Python ML-harness adapters, which are env-gated and absent here by
 default.)
 
@@ -15,7 +15,7 @@ never reimplement the pipeline.
                  │              facades (thin)                │
    AI IDEs ──────▶  MCP server   HTTP API   CLIs   web UI     │
    web apps  ─────▶  internal/mcp internal/httpapi  cmd/*     │
-   scripts   ──────▶            cmd/watermarks-mcp            │
+   scripts   ──────▶            cmd/antiaimark-mcp            │
                  └───────────────┬────────────────────────────┘
                                  │  pure library calls
                  ┌───────────────▼────────────────────────────┐
@@ -37,21 +37,21 @@ never reimplement the pipeline.
 | `internal/httpapi` | Embeddable HTTP service: the Python-compatible JSON API, the multipart upload/download web extension, the embedded web UI and `/api/i18n`. Errors localize per `Accept-Language`. | `cleaning`, `i18n` |
 | `internal/mcp` | MCP server (JSON-RPC 2.0 over stdio) exposing `capabilities`, `inspect_file`, `clean_file`, `inspect_text`, `clean_text`. Tool descriptions localize to the client's `initialize` locale. | `cleaning`, `i18n` |
 | `internal/janitor` | Background auto-clean: scheduled eviction of expired downloads; when free disk space falls below a threshold (default 11%) it removes this service's stale `wm-*` temp dirs oldest-first, purging pending downloads as a last resort. Injectable free-space probe and hooks. | `i18n` |
-| `cmd/*` | Thin binaries: the 9 CLIs, `watermarks-server` (flags + `httpapi`), `watermarks-mcp` (flags + stdio loop). | everything above |
+| `cmd/*` | Thin binaries: the 9 CLIs, `antiaimark-server` (flags + `httpapi`), `antiaimark-mcp` (flags + stdio loop). | everything above |
 
 ## Which facade should my plugin use?
 
-* **IDE / agent plugin (any MCP client)** → run `watermarks-mcp` as a stdio
+* **IDE / agent plugin (any MCP client)** → run `antiaimark-mcp` as a stdio
   server. Registration for Claude Code:
 
   ```bash
-  claude mcp add watermarks-remover -- /abs/path/to/watermarks-mcp
+  claude mcp add antiaimark -- /abs/path/to/antiaimark-mcp
   ```
 
   Cursor / Windsurf / Cline `mcp.json` equivalent:
 
   ```json
-  { "mcpServers": { "watermarks-remover": { "command": "/abs/path/to/watermarks-mcp" } } }
+  { "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
   ```
 
 * **Web / desktop app** → embed the HTTP facade directly:
@@ -63,7 +63,7 @@ never reimplement the pipeline.
   go http.ListenAndServe("127.0.0.1:8765", mux)
   ```
 
-  …or shell out to the `watermarks-server` binary. The web UI at `/` already
+  …or shell out to the `antiaimark-server` binary. The web UI at `/` already
   does image/video drag-and-drop with upload + download in 5 languages.
 
 * **Scripts / build tooling** → the CLIs (stable Python-compatible flags,
@@ -78,7 +78,7 @@ never reimplement the pipeline.
    catalog has every key with matching fmt verbs — the language then works
    everywhere at once (CLIs, HTTP errors, web UI, MCP descriptions).
 
-Language selection: `--lang` flag > `WATERMARKS_LANG` env > system locale
+Language selection: `--lang` flag > `ANTIAIMARK_LANG` env > system locale
 (`LANG`/`LC_ALL`, POSIX and Windows forms) > English. HTTP errors negotiate
 `Accept-Language`; the web UI persists its own choice in `localStorage`;
 MCP descriptions follow the client's `initialize` locale.

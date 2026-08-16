@@ -111,11 +111,24 @@ var videoFormats = map[string]bool{
 
 func isVideoFormat(fmt string) bool { return videoFormats[fmt] }
 
+var audioFormats = map[string]bool{
+	"mp3": true, "wav": true, "flac": true, "m4a": true, "m4b": true,
+	"aac": true, "ogg": true, "opus": true, "aiff": true, "wma": true,
+}
+
+func isAudioFormat(fmt string) bool { return audioFormats[fmt] }
+
 var videoExtToFormat = map[string]string{
 	".mp4": "mp4", ".m4v": "m4v", ".mov": "mov", ".qt": "mov",
 	".webm": "webm", ".mkv": "mkv", ".avi": "avi", ".wmv": "wmv",
 	".flv": "flv", ".ts": "mpegts", ".m2ts": "mpegts",
 	".mpg": "mpeg", ".mpeg": "mpeg", ".ogv": "ogv", ".3gp": "mp4",
+}
+
+var audioExtToFormat = map[string]string{
+	".mp3": "mp3", ".wav": "wav", ".flac": "flac", ".m4a": "m4a",
+	".m4b": "m4b", ".aac": "aac", ".ogg": "ogg", ".oga": "ogg",
+	".opus": "opus", ".aiff": "aiff", ".aif": "aiff", ".wma": "wma",
 }
 
 // DetectContainerFormat ports detect_container_format(path, data=None):
@@ -152,12 +165,19 @@ func DetectContainerFormat(path string, data []byte) string {
 				return fmt
 			}
 		}
-		// Go web extension: video magic bytes
+		// Go web extension: video/audio magic bytes. Audio is sniffed first
+		// because OggS/ftyp/ASF payloads can be either; the extension decides.
+		if fmt := sniffAudioFormat(ext, data); fmt != "" {
+			return fmt
+		}
 		if fmt := sniffVideoFormat(ext, data); fmt != "" {
 			return fmt
 		}
 	}
 	if fmt, ok := videoExtToFormat[ext]; ok {
+		return fmt
+	}
+	if fmt, ok := audioExtToFormat[ext]; ok {
 		return fmt
 	}
 	return "unknown"
@@ -215,6 +235,58 @@ func sniffVideoFormat(ext string, data []byte) string {
 	}
 	if bytes.HasPrefix(data, []byte("OggS")) {
 		return "ogv"
+	}
+	return ""
+}
+
+// sniffAudioFormat returns the audio format for payloads that are audio by
+// signature (ID3, fLaC, WAV, AIFF) or by extension when the container magic
+// is shared with video (ftyp / OggS / ASF). Returns "" when not audio, so
+// the video sniffer can still run.
+func sniffAudioFormat(ext string, data []byte) string {
+	if bytes.HasPrefix(data, []byte("ID3")) {
+		return "mp3"
+	}
+	if bytes.HasPrefix(data, []byte("fLaC")) {
+		return "flac"
+	}
+	if len(data) >= 12 && bytes.HasPrefix(data, []byte("RIFF")) && bytes.Equal(data[8:12], []byte("WAVE")) {
+		return "wav"
+	}
+	if len(data) >= 12 && bytes.HasPrefix(data, []byte("FORM")) && (bytes.Equal(data[8:12], []byte("AIFF")) || bytes.Equal(data[8:12], []byte("AIFC"))) {
+		return "aiff"
+	}
+	// raw MPEG frame sync (0xFF Ex): only trust it with an audio extension
+	if ext == ".mp3" || ext == ".aac" {
+		if len(data) >= 2 && data[0] == 0xFF && data[1]&0xE0 == 0xE0 {
+			if ext == ".mp3" {
+				return "mp3"
+			}
+			return "aac"
+		}
+	}
+	// containers shared with video: the extension decides
+	if len(data) >= 12 && bytes.Equal(data[4:8], []byte("ftyp")) {
+		switch string(data[8:12]) {
+		case "M4A ", "M4B ":
+			return "m4a"
+		}
+		if ext == ".m4a" || ext == ".m4b" {
+			return "m4a"
+		}
+		return ""
+	}
+	if bytes.HasPrefix(data, []byte("OggS")) {
+		switch ext {
+		case ".opus":
+			return "opus"
+		case ".ogg", ".oga":
+			return "ogg"
+		}
+		return ""
+	}
+	if ext == ".wma" && bytes.HasPrefix(data, []byte{0x30, 0x26, 0xB2, 0x75, 0x8E, 0x66, 0xCF, 0x11, 0xA6, 0xD9}) {
+		return "wma"
 	}
 	return ""
 }

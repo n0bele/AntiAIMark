@@ -5,10 +5,10 @@
 //
 // Defaults (all overridable):
 //
-//	Enabled            false  (opt-in: --auto-clean / WATERMARKS_AUTO_CLEAN=1)
-//	Interval           15m    (--auto-clean-interval / WATERMARKS_AUTO_CLEAN_INTERVAL)
-//	ThresholdPercent   11     (--auto-clean-threshold / WATERMARKS_AUTO_CLEAN_THRESHOLD)
-//	DownloadTTL        24h    (--auto-clean-ttl / WATERMARKS_AUTO_CLEAN_TTL)
+//	Enabled            false  (opt-in: --auto-clean / ANTIAIMARK_AUTO_CLEAN=1)
+//	Interval           15m    (--auto-clean-interval / ANTIAIMARK_AUTO_CLEAN_INTERVAL)
+//	ThresholdPercent   11     (--auto-clean-threshold / ANTIAIMARK_AUTO_CLEAN_THRESHOLD)
+//	DownloadTTL        24h    (--auto-clean-ttl / ANTIAIMARK_AUTO_CLEAN_TTL)
 //	MinAge             1h     (stale temp dirs younger than this are never touched)
 //
 // Safety rules:
@@ -30,7 +30,7 @@ import (
 	"strings"
 	"time"
 
-	"watermarks-remover/internal/i18n"
+	"antiaimark/internal/i18n"
 )
 
 // DefaultPrefixes are the MkdirTemp prefixes this service creates.

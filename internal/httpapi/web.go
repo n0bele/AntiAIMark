@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"watermarks-remover/internal/cleaning"
+	"antiaimark/internal/cleaning"
 )
 
 // downloadStore maps one-shot tokens to cleaned files.
@@ -317,6 +317,24 @@ func contentTypeFor(name string) string {
 		return "video/x-flv"
 	case ".mpg", ".mpeg":
 		return "video/mpeg"
+	case ".mp3":
+		return "audio/mpeg"
+	case ".wav":
+		return "audio/wav"
+	case ".flac":
+		return "audio/flac"
+	case ".m4a", ".m4b":
+		return "audio/mp4"
+	case ".aac":
+		return "audio/aac"
+	case ".ogg", ".oga":
+		return "audio/ogg"
+	case ".opus":
+		return "audio/opus"
+	case ".aiff", ".aif":
+		return "audio/aiff"
+	case ".wma":
+		return "audio/x-ms-wma"
 	case ".txt", ".md", ".markdown":
 		return "text/plain; charset=utf-8"
 	case ".html", ".htm":
