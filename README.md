@@ -1,4 +1,4 @@
-# antiaimark (Go)
+# antiaimark
 
 **English** | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Français](README.fr.md) | [Русский](README.ru.md)
 
