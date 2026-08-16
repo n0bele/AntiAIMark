@@ -136,9 +136,33 @@ Trae 的 **MCP** 设置页 → **添加服务器** → 填 stdio command 或 HTT
 
 ```bash
 codex mcp add antiaimark -- /abs/path/to/antiaimark-mcp
-# HTTP
-codex mcp add antiaimark --type http --url http://127.0.0.1:8765/mcp
+# HTTP（先启动 antiaimark-server）
+codex mcp add antiaimark --url http://127.0.0.1:8765/mcp
 ```
+
+### WorkBuddy（腾讯）
+
+桌面版（Windows/macOS，copilot.tencent.com 下载）通过标准 MCP 协议接入。
+
+**方式 A — 配置文件**：编辑 `~/.workbuddy/mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "antiaimark": {
+      "command": "/abs/path/to/antiaimark-mcp"
+    }
+  }
+}
+```
+
+HTTP 模式则替换为 `"url": "http://127.0.0.1:8765/mcp"`。
+
+**方式 B — 界面操作**：设置 → **连接器** → 添加连接器 → **自定义连接器** → 配置 MCP，粘贴上面的 JSON → 保存。
+
+注意：配置后需在连接器列表里**手动打开开关启用**，然后让 WorkBuddy 执行"查看可用的 MCP 工具"来验证。
+
+**SkillHub MCP 广场**：可到 <https://skillhub.workbuddy.cn/mcp> 一键导入 antiaimark（后续可把本 server 提交到广场供所有 WorkBuddy 用户使用）。
 
 ### Gemini CLI（Google）
 
@@ -151,6 +175,21 @@ gemini config set mcpServers.antiaimark.command "/abs/path/to/antiaimark-mcp"
 ```bash
 q mcp add antiaimark --command "/abs/path/to/antiaimark-mcp"
 ```
+
+### DeepSeek Harness（deepseek-ai/dsh）
+
+官方开源 Agent Harness（`npx @deepseek-ai/dsh web`，默认 http://127.0.0.1:3080）。Harness 采用"一切皆插件"架构（Cordis），**外部 MCP 通过自然语言提示词接入**：把下面这段提示词直接粘贴给 dsh，它会自行读取本文档并完成 antiaimark MCP 的安装与配置（配置后工具以 `mcp__antiaimark__*` 出现在任务轨迹中）：
+
+```text
+请接入 antiaimark 的 MCP 服务器（用于检测/去除 AI 溯源标记）。
+请先访问 https://raw.githubusercontent.com/n0bele/AntiAIMark/main/docs/MCP.md 阅读接入说明，
+然后完成 antiaimark-mcp 的安装与注册：
+1. 若本机没有 antiaimark-mcp 可执行文件，先按 install 脚本安装到 PATH；
+2. 采用 stdio 方式注册 antiaimark MCP 服务器；
+3. 注册完成后调用 capabilities 验证连接成功。
+```
+
+> 提示：dsh 目前是 **developer preview**（v0.1.0-rc.x），插件与配置 API 会破坏性变更；如需把 antiaimark 做成一键安装的 `dsh-plugin`，可关注官方 `dsh-plugin` 生态，本 server 为标准 stdio/HTTP MCP，协议层兼容。
 
 ## 3. 可用的工具
 

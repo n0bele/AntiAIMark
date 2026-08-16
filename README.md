@@ -124,9 +124,10 @@ Two transports are supported:
 Tools: `capabilities`, `inspect_file`, `clean_file`, `inspect_text`,
 `clean_text` — descriptions localize to the IDE language.
 
-Step-by-step registration for every IDE (Claude Code/Desktop, Cursor,
+Step-by-step registration for every IDE/agent (Claude Code/Desktop, Cursor,
 Windsurf, Cline, Continue, Zed, VS Code Copilot, JetBrains, Trae, Codex,
-Gemini, Amazon Q): see [docs/MCP.md](docs/MCP.md). Prebuilt binaries for all
+Gemini, Amazon Q, WorkBuddy, DeepSeek Harness): see [docs/MCP.md](docs/MCP.md).
+Prebuilt binaries for all
 platforms are published to GitHub Releases and installed with the one-liners
 below:
 

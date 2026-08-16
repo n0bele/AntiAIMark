@@ -79,6 +79,11 @@ Cursor / Windsurf / Cline / Zed - project root .mcp.json:
 Claude Desktop - claude_desktop_config.json:
   { "mcpServers": { "antiaimark": { "command": "$McpBin" } } }
 
+Codex CLI / WorkBuddy / DeepSeek Harness:
+  codex mcp add antiaimark -- $McpBin
+  WorkBuddy: ~/.workbuddy/mcp.json { "mcpServers": { "antiaimark": { "command": "$McpBin" } } }
+  dsh: paste the integration prompt from docs/MCP.md
+
 Cline (VS Code) / Continue / VS Code Copilot / JetBrains AI:
   add "antiaimark" in their MCP settings, same command or $ServerUrl
 
