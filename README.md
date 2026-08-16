@@ -110,8 +110,32 @@ claude mcp add antiaimark -- /abs/path/to/bin/antiaimark-mcp
 { "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
 ```
 
+Two transports are supported:
+
+- **stdio** — `bin/antiaimark-mcp`, the `command` form above (Claude Code,
+  Cursor, Windsurf, Cline, Continue, Zed, …).
+- **Streamable HTTP** — register the running HTTP service (`antiaimark-server`)
+  as a remote MCP server, no binary path needed:
+
+```json
+{ "mcpServers": { "antiaimark": { "type": "http", "url": "http://127.0.0.1:8765/mcp" } } }
+```
+
 Tools: `capabilities`, `inspect_file`, `clean_file`, `inspect_text`,
 `clean_text` — descriptions localize to the IDE language.
+
+Step-by-step registration for every IDE (Claude Code/Desktop, Cursor,
+Windsurf, Cline, Continue, Zed, VS Code Copilot, JetBrains, Trae, Codex,
+Gemini, Amazon Q): see [docs/MCP.md](docs/MCP.md). Prebuilt binaries for all
+platforms are published to GitHub Releases and installed with the one-liners
+below:
+
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.sh | bash
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.ps1 | iex
+```
 
 ## Optional ML harnesses
 

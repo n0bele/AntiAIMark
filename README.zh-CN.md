@@ -101,8 +101,31 @@ claude mcp add antiaimark -- /abs/path/to/bin/antiaimark-mcp
 { "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
 ```
 
+支持两种传输方式：
+
+- **stdio** —— `bin/antiaimark-mcp`，即上面的 `command` 形式（Claude Code、
+  Cursor、Windsurf、Cline、Continue、Zed 等）。
+- **Streamable HTTP** —— 把运行中的 HTTP 服务（`antiaimark-server`）注册为远程
+  MCP 服务器，无需填写二进制路径：
+
+```json
+{ "mcpServers": { "antiaimark": { "type": "http", "url": "http://127.0.0.1:8765/mcp" } } }
+```
+
 工具：`capabilities`、`inspect_file`、`clean_file`、`inspect_text`、
 `clean_text`——描述随 IDE 语言自动本地化。
+
+各 IDE 的完整分步注册说明（Claude Code/Desktop、Cursor、Windsurf、Cline、
+Continue、Zed、VS Code Copilot、JetBrains、Trae、Codex、Gemini、Amazon Q）：
+见 [docs/MCP.md](docs/MCP.md)。各平台预编译产物发布在 GitHub Releases，
+可用下面的命令一键安装：
+
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.sh | bash
+# Windows（PowerShell）
+irm https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.ps1 | iex
+```
 
 ## 可选 ML harness
 

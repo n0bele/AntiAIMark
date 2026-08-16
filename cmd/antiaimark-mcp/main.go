@@ -26,6 +26,11 @@ import (
 	"antiaimark/internal/mcp"
 )
 
+// buildVersion is stamped at release time via -ldflags
+// "-X antiaimark/cmd/antiaimark-mcp.buildVersion=<tag>"; ANTIAIMARK_SERVER_VERSION
+// still takes precedence at runtime.
+var buildVersion = "dev"
+
 func main() {
 	versionFlag := flag.Bool("V", false, "print version and exit")
 	flag.BoolVar(versionFlag, "version", false, "print version and exit")
@@ -36,7 +41,7 @@ func main() {
 
 	version := os.Getenv("ANTIAIMARK_SERVER_VERSION")
 	if version == "" {
-		version = "dev"
+		version = buildVersion
 	}
 	if *versionFlag {
 		fmt.Println(version)

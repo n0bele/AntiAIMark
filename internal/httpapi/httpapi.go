@@ -1,7 +1,8 @@
 // Package httpapi is the embeddable HTTP facade over the cleaning core: the
 // Python-compatible JSON API (/health, /capabilities, /openapi.json,
 // /inspect, /clean), the web extension (/api/upload, /api/download/{token},
-// the embedded web UI at /), and the i18n catalog endpoint (/api/i18n).
+// the embedded web UI at /), the i18n catalog endpoint (/api/i18n), and the
+// MCP Streamable HTTP endpoint (/mcp) for AI-IDEs and agents.
 //
 // Import it from any Go program — an IDE plugin, a desktop app, a test — and
 // serve it on any mux:
@@ -27,6 +28,7 @@ import (
 
 	"antiaimark/internal/cleaning"
 	"antiaimark/internal/i18n"
+	"antiaimark/internal/mcp"
 )
 
 //go:embed static
@@ -65,6 +67,7 @@ func (a *API) Handler() http.Handler {
 	mux.HandleFunc("/capabilities", a.auth(a.handleCapabilities))
 	mux.HandleFunc("/openapi.json", a.auth(a.handleOpenAPI))
 	mux.HandleFunc("/api/i18n", a.handleI18n) // public: the UI needs it pre-auth too
+	mux.Handle("/mcp", a.auth(mcp.NewHTTPServer(a.opts.Version).ServeHTTP))
 	mux.HandleFunc("/inspect", a.requirePost(a.auth(a.handleInspectRoute)))
 	mux.HandleFunc("/clean", a.requirePost(a.auth(a.handleCleanRoute)))
 	mux.HandleFunc("/api/upload", a.requirePost(a.auth(a.handleUpload)))

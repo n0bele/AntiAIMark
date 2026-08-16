@@ -4,6 +4,7 @@
 //
 //	GET  /health /capabilities /openapi.json
 //	POST /inspect /clean        (JSON, base64 file bodies)
+//	POST/GET/DELETE /mcp        MCP Streamable HTTP endpoint for AI IDEs
 //
 // Go web extension:
 //
@@ -38,6 +39,11 @@ import (
 	"antiaimark/internal/i18n"
 	"antiaimark/internal/janitor"
 )
+
+// buildVersion is stamped at release time via -ldflags
+// "-X antiaimark/cmd/antiaimark-server.buildVersion=<tag>"; ANTIAIMARK_SERVER_VERSION
+// still takes precedence at runtime.
+var buildVersion = "dev"
 
 func envOr(key, def string) string {
 	if v := os.Getenv(key); v != "" {
@@ -89,7 +95,7 @@ func main() {
 
 	version := os.Getenv("ANTIAIMARK_SERVER_VERSION")
 	if version == "" {
-		version = "dev"
+		version = buildVersion
 	}
 
 	if *versionFlag {

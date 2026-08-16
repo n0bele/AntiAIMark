@@ -35,7 +35,7 @@ never reimplement the pipeline.
 | `internal/i18n` | Message catalog for every human-facing string (CLI output, HTTP errors, web UI, MCP tool descriptions). English is the reference and byte-identical to the Python originals. | — |
 | `internal/cliutil` | Shared CLI plumbing: argparse-style interspersed flag parsing, `--lang`, Python-parity fatal-error exits. | `cleaning`, `i18n` |
 | `internal/httpapi` | Embeddable HTTP service: the Python-compatible JSON API, the multipart upload/download web extension, the embedded web UI and `/api/i18n`. Errors localize per `Accept-Language`. | `cleaning`, `i18n` |
-| `internal/mcp` | MCP server (JSON-RPC 2.0 over stdio) exposing `capabilities`, `inspect_file`, `clean_file`, `inspect_text`, `clean_text`. Tool descriptions localize to the client's `initialize` locale. | `cleaning`, `i18n` |
+| `internal/mcp` | MCP server exposing `capabilities`, `inspect_file`, `clean_file`, `inspect_text`, `clean_text` over both transports: JSON-RPC 2.0 over stdio (`antiaimark-mcp`) and Streamable HTTP (`/mcp` on the HTTP service, 2025-03-26 revision, with per-session state). Tool descriptions localize to the client's `initialize` locale. | `cleaning`, `i18n` |
 | `internal/janitor` | Background auto-clean: scheduled eviction of expired downloads; when free disk space falls below a threshold (default 11%) it removes this service's stale `wm-*` temp dirs oldest-first, purging pending downloads as a last resort. Injectable free-space probe and hooks. | `i18n` |
 | `cmd/*` | Thin binaries: the 9 CLIs, `antiaimark-server` (flags + `httpapi`), `antiaimark-mcp` (flags + stdio loop). | everything above |
 
@@ -53,6 +53,16 @@ never reimplement the pipeline.
   ```json
   { "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
   ```
+
+  …or, with the HTTP service running, register it as a remote server (no
+  binary path, and it works from any host that can reach the service):
+
+  ```json
+  { "mcpServers": { "antiaimark": { "type": "http", "url": "http://127.0.0.1:8765/mcp" } } }
+  ```
+
+  Both transports expose the identical tool set and localize descriptions
+  from the client's `initialize` locale.
 
 * **Web / desktop app** → embed the HTTP facade directly:
 

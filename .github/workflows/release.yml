@@ -1,0 +1,124 @@
+name: Release
+
+# Publish prebuilt binaries to a GitHub Release. Trigger on any tag push:
+#
+#   git tag v1.0.0
+#   git push origin v1.0.0
+#
+# Each release carries antiaimark-<os>-<arch>.tar.gz|.zip with every binary
+# (antiaimark-server, antiaimark-mcp, the CLIs, healthcheck) + README + LICENSE.
+# The tag version (without the leading "v") is stamped into the binaries.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            goos: linux
+            goarch: amd64
+          - target: linux-arm64
+            goos: linux
+            goarch: arm64
+          - target: linux-386
+            goos: linux
+            goarch: "386"
+          - target: darwin-amd64
+            goos: darwin
+            goarch: amd64
+          - target: darwin-arm64
+            goos: darwin
+            goarch: arm64
+          - target: windows-amd64
+            goos: windows
+            goarch: amd64
+          - target: windows-arm64
+            goos: windows
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Cross-compile
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          # -X main.buildVersion works for main packages (the import-path
+          # form does not apply here); packages without the var are skipped.
+          ldflags="-s -w -X main.buildVersion=${version}"
+          mkdir -p "dist/antiaimark-${{ matrix.target }}"
+          go build -trimpath -ldflags="$ldflags" \
+            -o "dist/antiaimark-${{ matrix.target }}" ./cmd/...
+
+      - name: Package (tar.gz)
+        if: matrix.goos != 'windows'
+        run: |
+          tar -czf "dist/antiaimark-${{ matrix.target }}.tar.gz" \
+            -C dist "antiaimark-${{ matrix.target }}" \
+            -C "${{ github.workspace }}" README.md LICENSE
+
+      - name: Package (zip)
+        if: matrix.goos == 'windows'
+        run: |
+          cp README.md LICENSE "dist/antiaimark-${{ matrix.target }}/"
+          cd dist && zip -qr "antiaimark-${{ matrix.target }}.zip" \
+            "antiaimark-${{ matrix.target }}"
+
+      - name: Upload artifact (tar.gz)
+        if: matrix.goos != 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: antiaimark-${{ matrix.target }}
+          path: dist/antiaimark-${{ matrix.target }}.tar.gz
+          if-no-files-found: error
+
+      - name: Upload artifact (zip)
+        if: matrix.goos == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: antiaimark-${{ matrix.target }}
+          path: dist/antiaimark-${{ matrix.target }}.zip
+          if-no-files-found: error
+
+  release:
+    name: publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" artifacts/* \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Prebuilt binaries for every platform. Install with:
+
+            \`\`\`
+            curl -fsSL https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.sh | bash
+            # Windows (PowerShell):
+            # irm https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.ps1 | iex
+            \`\`\`
+
+            Then register the MCP server in your AI IDE — see docs/MCP.md."
