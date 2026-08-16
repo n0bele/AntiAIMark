@@ -15,8 +15,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-go@d2e3f8a4d936a45456e98f82e26fae6b0b50d00e # v5.0.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
@@ -43,7 +43,18 @@ jobs:
           go build -o /tmp/antiaimark-server ./cmd/antiaimark-server
           /tmp/antiaimark-server --port 18765 &
           sleep 1
+          # JSON endpoints (indented JSON: note the space after the colon)
           curl -fsS http://127.0.0.1:18765/health | grep '"ok"'
-          curl -fsS "http://127.0.0.1:18765/api/i18n?lang=zh" | grep '"lang":"zh"'
+          curl -fsS "http://127.0.0.1:18765/api/i18n?lang=zh" | grep '"lang": "zh"'
+          # MCP over stdio (compact single-line JSON)
           printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"locale":"zh-CN"}}\n{"jsonrpc":"2.0","id":2,"method":"tools/list"}\n' \
             | go run ./cmd/antiaimark-mcp | head -2 | grep -c '"name":"capabilities"'
+          # MCP over Streamable HTTP (session handshake + tools/list)
+          sid=$(curl -fsS -X POST http://127.0.0.1:18765/mcp \
+            -H "Accept: application/json" -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"locale":"zh-CN"}}' \
+            -D - -o /dev/null | tr -d '\r' | awk -F': ' '/^Mcp-Session-Id/{print $2; exit}')
+          test -n "$sid"
+          curl -fsS -X POST http://127.0.0.1:18765/mcp \
+            -H "Accept: application/json" -H "Mcp-Session-Id: $sid" \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | grep -c '"name":"capabilities"'
