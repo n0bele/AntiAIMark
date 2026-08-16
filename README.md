@@ -35,17 +35,17 @@ auto-clean. Pure Go, static binaries, no runtime dependencies.
 ```bash
 go build ./...          # build everything
 go test ./...           # run the suite
-./deploy.sh build       # or: build all 12 binaries into bin/
-./bin/antiaimark-server # HTTP + web UI on 127.0.0.1:8765
+./deploy.sh build       # or: build the single binary into bin/
+./bin/antiaimark server # HTTP + web UI on 127.0.0.1:8765
 ```
 
 Open http://127.0.0.1:8765/ and drag an image or video in. CLI examples:
 
 ```bash
-./bin/inspect-file photo.png --json      # unified inspect (auto-routes)
-./bin/clean-file   doc.docx              # writes doc.cleaned.docx
-./bin/clean-text   notes.txt --lang zh   # localized CLI messages
-./bin/audit-dir    ~/blog                # aggregate directory audit
+./bin/antiaimark inspect-file photo.png --json    # unified inspect (auto-routes)
+./bin/antiaimark clean-file   doc.docx            # writes doc.cleaned.docx
+./bin/antiaimark clean-text   notes.txt --lang zh # localized CLI messages
+./bin/antiaimark audit-dir    ~/blog              # aggregate directory audit
 ```
 
 ## Deployment
@@ -105,16 +105,16 @@ protected so in-flight requests are never disturbed.
 ## AI IDE integration (MCP)
 
 ```bash
-claude mcp add antiaimark -- /abs/path/to/bin/antiaimark-mcp
+claude mcp add antiaimark -- /abs/path/to/bin/antiaimark mcp
 # Cursor / Windsurf / Cline mcp.json:
-{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/bin/antiaimark", "args": ["mcp"] } } }
 ```
 
 Two transports are supported:
 
-- **stdio** — `bin/antiaimark-mcp`, the `command` form above (Claude Code,
+- **stdio** — `bin/antiaimark mcp`, the `command` form above (Claude Code,
   Cursor, Windsurf, Cline, Continue, Zed, …).
-- **Streamable HTTP** — register the running HTTP service (`antiaimark-server`)
+- **Streamable HTTP** — register the running HTTP service (`antiaimark server`)
   as a remote MCP server, no binary path needed:
 
 ```json

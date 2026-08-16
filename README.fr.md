@@ -35,17 +35,17 @@ pur, binaires statiques, aucune dépendance à l'exécution.
 ```bash
 go build ./...          # tout compiler
 go test ./...           # lancer la suite
-./deploy.sh build       # ou : les 12 binaires dans bin/
-./bin/antiaimark-server # HTTP + web sur 127.0.0.1:8765
+./deploy.sh build       # ou : le binaire unique dans bin/
+./bin/antiaimark server # HTTP + web sur 127.0.0.1:8765
 ```
 
 Ouvrez http://127.0.0.1:8765/ et déposez-y une image ou une vidéo. Exemples CLI :
 
 ```bash
-./bin/inspect-file photo.png --json      # inspection unifiée (routage auto)
-./bin/clean-file   doc.docx              # écrit doc.cleaned.docx
-./bin/clean-text   notes.txt --lang fr   # messages localisés
-./bin/audit-dir    ~/blog                # audit agrégé d'un répertoire
+./bin/antiaimark inspect-file photo.png --json      # inspection unifiée (routage auto)
+./bin/antiaimark clean-file   doc.docx              # écrit doc.cleaned.docx
+./bin/antiaimark clean-text   notes.txt --lang fr   # messages localisés
+./bin/antiaimark audit-dir    ~/blog                # audit agrégé d'un répertoire
 ```
 
 ## Déploiement
@@ -106,9 +106,9 @@ requêtes en cours.
 ## Intégration aux IDE IA (MCP)
 
 ```bash
-claude mcp add antiaimark -- /chemin/abs/vers/bin/antiaimark-mcp
+claude mcp add antiaimark -- /chemin/abs/vers/bin/antiaimark mcp
 # mcp.json de Cursor / Windsurf / Cline :
-{ "mcpServers": { "antiaimark": { "command": "/chemin/abs/vers/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/chemin/abs/vers/bin/antiaimark", "args": ["mcp"] } } }
 ```
 
 Outils : `capabilities`, `inspect_file`, `clean_file`, `inspect_text`,

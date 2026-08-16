@@ -28,17 +28,17 @@ CLI、HTTP 服务 + 网页界面、面向 AI IDE 的 MCP 服务器，以及后�
 ```bash
 go build ./...          # 构建全部
 go test ./...           # 运行测试
-./deploy.sh build       # 或者：把 12 个二进制构建到 bin/
-./bin/antiaimark-server # HTTP + 网页界面，监听 127.0.0.1:8765
+./deploy.sh build       # 或者：把单一二进制构建到 bin/
+./bin/antiaimark server # HTTP + 网页界面，监听 127.0.0.1:8765
 ```
 
 打开 http://127.0.0.1:8765/，拖入图片或视频即可。CLI 示例：
 
 ```bash
-./bin/inspect-file photo.png --json      # 统一检测（自动路由格式）
-./bin/clean-file   doc.docx              # 输出 doc.cleaned.docx
-./bin/clean-text   notes.txt --lang zh   # 中文命令行提示
-./bin/audit-dir    ~/blog                # 目录聚合审计
+./bin/antiaimark inspect-file photo.png --json    # 统一检测（自动路由格式）
+./bin/antiaimark clean-file   doc.docx            # 输出 doc.cleaned.docx
+./bin/antiaimark clean-text   notes.txt --lang zh # 中文命令行提示
+./bin/antiaimark audit-dir    ~/blog              # 目录聚合审计
 ```
 
 ## 部署
@@ -96,16 +96,16 @@ Docker 备选：`docker compose up -d`（环回绑定、健康检查、只读根
 ## AI IDE 接入（MCP）
 
 ```bash
-claude mcp add antiaimark -- /abs/path/to/bin/antiaimark-mcp
+claude mcp add antiaimark -- /abs/path/to/bin/antiaimark mcp
 # Cursor / Windsurf / Cline 的 mcp.json：
-{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/bin/antiaimark", "args": ["mcp"] } } }
 ```
 
 支持两种传输方式：
 
-- **stdio** —— `bin/antiaimark-mcp`，即上面的 `command` 形式（Claude Code、
+- **stdio** —— `bin/antiaimark mcp`，即上面的 `command` 形式（Claude Code、
   Cursor、Windsurf、Cline、Continue、Zed 等）。
-- **Streamable HTTP** —— 把运行中的 HTTP 服务（`antiaimark-server`）注册为远程
+- **Streamable HTTP** —— 把运行中的 HTTP 服务（`antiaimark server`）注册为远程
   MCP 服务器，无需填写二进制路径：
 
 ```json

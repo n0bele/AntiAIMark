@@ -13,7 +13,7 @@
 - [ ] 代码已推送到 GitHub，默认分支为 `main`
 - [ ] 仓库根存在 `.claude-plugin/marketplace.json`，格式合法
 - [ ] 本地已跑通官方校验：`claude plugin validate .` → Validation passed（CI 里也会自动跑，见 `.github/workflows/ci.yml`）
-- [ ] 已发布一个 `v*` 标签，GitHub Releases 有 7 个平台的预编译二进制（`antiaimark-mcp` 等），供插件 stdio 拉起
+- [ ] 已发布一个 `v*` 标签，GitHub Releases 有 7 个平台的预编译二进制（`antiaimark`，IDE 以 `antiaimark mcp` 拉起），供插件 stdio 使用
 - [ ] marketplace / plugin 名称均满足 kebab-case，未使用 Anthropic 保留名
 - [ ] 插件描述准确、无夸大宣传；许可证明确（MIT）
 - [ ] 文档/README 说明安装前置条件（先装二进制到 PATH，见 `plugins/antiaimark/README.md`）
@@ -25,7 +25,7 @@
 | 仓库地址 | `n0bele/AntiAIMark` |
 | 插件名 | `antiaimark`（kebab-case） |
 | Marketplace 名 | `antiaimark` |
-| 版本 | `1.0.0`（每次更新需 bump） |
+| 版本 | `1.0.1`（每次更新需 bump） |
 | 简介 | Detect and strip AI provenance marks: invisible Unicode steganography, C2PA/EXIF/XMP metadata, container metadata (PDF/DOCX/ODT/SVG/HTML/Markdown, best-effort video), vendor keywords — via MCP tools (inspect_file, clean_file, inspect_text, clean_text, capabilities) |
 | 分类 | MCP / Privacy & content |
 | 作者 | n0bele |

@@ -9,7 +9,7 @@ Type=simple
 User=antiaimark
 Group=antiaimark
 EnvironmentFile=/etc/antiaimark.env
-ExecStart=/usr/local/bin/antiaimark-server
+ExecStart=/usr/local/bin/antiaimark server
 Restart=on-failure
 RestartSec=3
 

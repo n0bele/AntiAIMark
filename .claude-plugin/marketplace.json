@@ -11,7 +11,7 @@
       "source": "./plugins/antiaimark",
       "displayName": "AntiAIMark",
       "description": "Detect and strip AI provenance marks: invisible Unicode steganography, C2PA/EXIF/XMP image metadata, container metadata (PDF, DOCX, ODT, SVG, HTML, Markdown, best-effort video), and vendor keywords (OpenAI, Imagen, Firefly, Midjourney, Stable Diffusion, FLUX, Ideogram, Recraft, Grok, 豆包·即梦, 腾讯混元, 通义万相, 可灵, 智谱, 文心一格, 海螺…).",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "n0bele",
         "url": "https://github.com/n0bele"

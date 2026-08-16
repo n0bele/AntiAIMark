@@ -1,7 +1,7 @@
 {
   "name": "antiaimark",
   "description": "Detect and strip AI provenance marks: invisible Unicode steganography, C2PA/EXIF/XMP image metadata, container metadata (PDF, DOCX, ODT, SVG, HTML, Markdown, best-effort video), and vendor keywords. Includes inspect_file, clean_file, inspect_text, clean_text and capabilities MCP tools.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "n0bele",
     "url": "https://github.com/n0bele"

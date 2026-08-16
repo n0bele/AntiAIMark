@@ -4,10 +4,10 @@ antiaimark 以 **MCP（Model Context Protocol）** 标准接入 AI IDE，支持�
 
 | 方式 | 用途 | 注册形式 |
 | --- | --- | --- |
-| **stdio** | 本机安装 `antiaimark-mcp` 二进制，由 IDE 拉起 | `"command": "<绝对路径>/antiaimark-mcp"` |
-| **Streamable HTTP** | 连接已运行的 `antiaimark-server`（本机或服务器） | `"type": "http", "url": "http://<host>:8765/mcp"` |
+| **stdio** | 本机安装 `antiaimark` 二进制，由 IDE 以 `antiaimark mcp` 拉起 | `"command": "<绝对路径>/antiaimark", "args": ["mcp"]` |
+| **Streamable HTTP** | 连接已运行的 `antiaimark server`（本机或服务器） | `"type": "http", "url": "http://<host>:8765/mcp"` |
 
-> 建议：**团队/多 IDE 场景直接用 HTTP 方式**——部署一次 `antiaimark-server`，所有 IDE 填同一个 URL 即可，无需每台机器装二进制。
+> 建议：**团队/多 IDE 场景直接用 HTTP 方式**——部署一次 `antiaimark server`，所有 IDE 填同一个 URL 即可，无需每台机器装二进制。
 
 ## 1. 准备工作
 
@@ -28,8 +28,8 @@ irm https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.ps1
 ### 启动 HTTP 服务（HTTP 方式需要）
 
 ```bash
-./bin/antiaimark-server                       # 本机 127.0.0.1:8765
-ANTIAIMARK_SERVER_API_KEY=xxx ./bin/antiaimark-server   # 加鉴权后填 URL 也要带 key
+./bin/antiaimark server                       # 本机 127.0.0.1:8765
+ANTIAIMARK_SERVER_API_KEY=xxx ./bin/antiaimark server   # 加鉴权后填 URL 也要带 key
 # Docker:  docker compose up -d
 ```
 
@@ -41,8 +41,8 @@ ANTIAIMARK_SERVER_API_KEY=xxx ./bin/antiaimark-server   # 加鉴权后填 URL �
 
 ```bash
 # stdio
-claude mcp add antiaimark -- /abs/path/to/antiaimark-mcp
-# HTTP（先启动 antiaimark-server）
+claude mcp add antiaimark -- /abs/path/to/antiaimark mcp
+# HTTP（先启动 antiaimark server）
 claude mcp add antiaimark --transport http http://127.0.0.1:8765/mcp
 # 查看/移除
 claude mcp list
@@ -52,7 +52,7 @@ claude mcp remove antiaimark
 也可以写入项目根目录 `.mcp.json`：
 
 ```json
-{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark", "args": ["mcp"] } } }
 ```
 
 ### Claude Desktop
@@ -60,7 +60,7 @@ claude mcp remove antiaimark
 编辑配置文件（Windows：`%APPDATA%\Claude\claude_desktop_config.json`；macOS：`~/Library/Application Support/Claude/claude_desktop_config.json`）：
 
 ```json
-{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark", "args": ["mcp"] } } }
 ```
 
 保存后重启 Claude Desktop。
@@ -74,7 +74,7 @@ claude mcp remove antiaimark
 { "mcpServers": { "antiaimark": { "type": "http", "url": "http://127.0.0.1:8765/mcp" } } }
 ```
 
-（stdio 时把 `type/url` 换成 `command: "/abs/path/to/antiaimark-mcp"`。）
+（stdio 时把 `type/url` 换成 `command: "/abs/path/to/antiaimark", "args": ["mcp"]`。）
 
 ### Windsurf
 
@@ -87,7 +87,7 @@ claude mcp remove antiaimark
 2. **MCP Servers** → **Configure MCP Servers**，在 `cline_mcp_settings.json` 中添加：
 
 ```json
-{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark", "args": ["mcp"] } } }
 ```
 
 3. 回到面板点击 **antiaimark** 旁的连接按钮。
@@ -99,7 +99,7 @@ claude mcp remove antiaimark
 ```json
 {
   "mcpServers": [
-    { "mcpId": "antiaimark", "command": "/abs/path/to/antiaimark-mcp" }
+    { "mcpId": "antiaimark", "command": "/abs/path/to/antiaimark", "args": ["mcp"] }
   ]
 }
 ```
@@ -109,7 +109,7 @@ claude mcp remove antiaimark
 项目根目录 `.zed/mcp.json` 或全局 `~/.config/zed/mcp.json`：
 
 ```json
-{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark", "args": ["mcp"] } } }
 ```
 
 ### VS Code Copilot
@@ -135,8 +135,8 @@ Trae 的 **MCP** 设置页 → **添加服务器** → 填 stdio command 或 HTT
 ### Codex CLI（OpenAI）
 
 ```bash
-codex mcp add antiaimark -- /abs/path/to/antiaimark-mcp
-# HTTP（先启动 antiaimark-server）
+codex mcp add antiaimark -- /abs/path/to/antiaimark mcp
+# HTTP（先启动 antiaimark server）
 codex mcp add antiaimark --url http://127.0.0.1:8765/mcp
 ```
 
@@ -150,7 +150,8 @@ codex mcp add antiaimark --url http://127.0.0.1:8765/mcp
 {
   "mcpServers": {
     "antiaimark": {
-      "command": "/abs/path/to/antiaimark-mcp"
+      "command": "/abs/path/to/antiaimark",
+      "args": ["mcp"]
     }
   }
 }
@@ -167,13 +168,14 @@ HTTP 模式则替换为 `"url": "http://127.0.0.1:8765/mcp"`。
 ### Gemini CLI（Google）
 
 ```bash
-gemini config set mcpServers.antiaimark.command "/abs/path/to/antiaimark-mcp"
+gemini config set mcpServers.antiaimark.command "/abs/path/to/antiaimark"
+gemini config set mcpServers.antiaimark.args '["mcp"]'
 ```
 
 ### Amazon Q CLI
 
 ```bash
-q mcp add antiaimark --command "/abs/path/to/antiaimark-mcp"
+q mcp add --name antiaimark --command "/abs/path/to/antiaimark" --args '["mcp"]'
 ```
 
 ### DeepSeek Harness（deepseek-ai/dsh）
@@ -183,8 +185,8 @@ q mcp add antiaimark --command "/abs/path/to/antiaimark-mcp"
 ```text
 请接入 antiaimark 的 MCP 服务器（用于检测/去除 AI 溯源标记）。
 请先访问 https://raw.githubusercontent.com/n0bele/AntiAIMark/main/docs/MCP.md 阅读接入说明，
-然后完成 antiaimark-mcp 的安装与注册：
-1. 若本机没有 antiaimark-mcp 可执行文件，先按 install 脚本安装到 PATH；
+然后完成 antiaimark 的安装与注册：
+1. 若本机没有 antiaimark 可执行文件，先按 install 脚本安装到 PATH；
 2. 采用 stdio 方式注册 antiaimark MCP 服务器；
 3. 注册完成后调用 capabilities 验证连接成功。
 ```
@@ -205,7 +207,7 @@ q mcp add antiaimark --command "/abs/path/to/antiaimark-mcp"
 
 ## 4. 常见问题
 
-- **HTTP 方式连不上？** 确认 `antiaimark-server` 已启动（`curl http://127.0.0.1:8765/health`）；服务器部署时 URL 用公网/内网地址，且端口已放行。
+- **HTTP 方式连不上？** 确认 `antiaimark server` 已启动（`curl http://127.0.0.1:8765/health`）；服务器部署时 URL 用公网/内网地址，且端口已放行。
 - **设置了 API Key？** `ANTIAIMARK_SERVER_API_KEY` 非空时，MCP 请求也需要在客户端配置认证（各 IDE 的 MCP 设置支持加 header）。未配置则保持 API Key 为空。
 - **工具列表为空？** 部分 IDE 需要在 `initialize` 完成后刷新/重启才加载工具。
-- **没有预编译产物？** 仓库打 tag（`git tag v1.0.0 && git push origin v1.0.0`）触发 Release 工作流，产物发布到 GitHub Releases。
+- **没有预编译产物？** 仓库打 tag（`git tag v1.0.1 && git push origin v1.0.1`）触发 Release 工作流，产物发布到 GitHub Releases。

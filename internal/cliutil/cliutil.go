@@ -18,6 +18,12 @@ func AddLangFlag(p *string) {
 	flag.StringVar(p, "lang", "", "UI language: en|zh|es|fr|ru (default: $ANTIAIMARK_LANG, then system locale)")
 }
 
+// AddLangFlagFS is AddLangFlag for an explicit FlagSet (used by the merged
+// antiaimark binary, where every subcommand parses its own flags).
+func AddLangFlagFS(fs *flag.FlagSet, p *string) {
+	fs.StringVar(p, "lang", "", "UI language: en|zh|es|fr|ru (default: $ANTIAIMARK_LANG, then system locale)")
+}
+
 // Init applies locale resolution (--lang override > ANTIAIMARK_LANG > system
 // locale > English). Call once after flag parsing, before any output.
 func Init(langOverride string) {
@@ -27,17 +33,23 @@ func Init(langOverride string) {
 // ParseAllowInterspersed mirrors argparse's tolerance of options after
 // positionals ("clean-text in.txt -o out.txt"), which Go's flag package
 // rejects natively: re-parse after each positional argument.
-func ParseAllowInterspersed() (positional []string) {
-	args := os.Args[1:]
+func ParseAllowInterspersed() []string {
+	return ParseAllowInterspersedFS(flag.CommandLine, os.Args[1:])
+}
+
+// ParseAllowInterspersedFS is ParseAllowInterspersed for an explicit FlagSet
+// and argument slice — the merged antiaimark binary passes each subcommand's
+// remaining args instead of reading os.Args itself.
+func ParseAllowInterspersedFS(fs *flag.FlagSet, args []string) (positional []string) {
 	for {
-		if err := flag.CommandLine.Parse(args); err != nil {
+		if err := fs.Parse(args); err != nil {
 			os.Exit(2)
 		}
-		if flag.CommandLine.NArg() == 0 {
+		if fs.NArg() == 0 {
 			return positional
 		}
-		positional = append(positional, flag.CommandLine.Arg(0))
-		args = flag.CommandLine.Args()[1:]
+		positional = append(positional, fs.Arg(0))
+		args = fs.Args()[1:]
 	}
 }
 

@@ -45,15 +45,15 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          go build -o /tmp/antiaimark-server ./cmd/antiaimark-server
-          /tmp/antiaimark-server --port 18765 &
+          go build -o /tmp/antiaimark ./cmd/antiaimark
+          /tmp/antiaimark server --port 18765 &
           sleep 1
           # JSON endpoints (indented JSON: note the space after the colon)
           curl -fsS http://127.0.0.1:18765/health | grep '"ok"'
           curl -fsS "http://127.0.0.1:18765/api/i18n?lang=zh" | grep '"lang": "zh"'
           # MCP over stdio (compact single-line JSON)
           printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"locale":"zh-CN"}}\n{"jsonrpc":"2.0","id":2,"method":"tools/list"}\n' \
-            | go run ./cmd/antiaimark-mcp | head -2 | grep -c '"name":"capabilities"'
+            | go run ./cmd/antiaimark mcp | head -2 | grep -c '"name":"capabilities"'
           # MCP over Streamable HTTP (session handshake + tools/list)
           sid=$(curl -fsS -X POST http://127.0.0.1:18765/mcp \
             -H "Accept: application/json" -H "Content-Type: application/json" \

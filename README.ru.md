@@ -35,17 +35,17 @@ C2PA/EXIF/XMP, метаданные контейнеров (PDF, DOCX, ODT, SVG,
 ```bash
 go build ./...          # собрать всё
 go test ./...           # запустить тесты
-./deploy.sh build       # или: все 12 бинарников в bin/
-./bin/antiaimark-server # HTTP + веб на 127.0.0.1:8765
+./deploy.sh build       # или: единственный бинарник в bin/
+./bin/antiaimark server # HTTP + веб на 127.0.0.1:8765
 ```
 
 Откройте http://127.0.0.1:8765/ и перетащите изображение или видео. Примеры CLI:
 
 ```bash
-./bin/inspect-file фото.png --json      # унифицированная инспекция (авто-маршрутизация)
-./bin/clean-file   doc.docx             # пишет doc.cleaned.docx
-./bin/clean-text   заметки.txt --lang ru
-./bin/audit-dir    ~/blog               # агрегированный аудит каталога
+./bin/antiaimark inspect-file фото.png --json      # унифицированная инспекция (авто-маршрутизация)
+./bin/antiaimark clean-file   doc.docx             # пишет doc.cleaned.docx
+./bin/antiaimark clean-text   заметки.txt --lang ru
+./bin/antiaimark audit-dir    ~/blog               # агрегированный аудит каталога
 ```
 
 ## Развёртывание
@@ -105,9 +105,9 @@ read-only rootfs, снятые capabilities; параметры через ок�
 ## Интеграция с ИИ-IDE (MCP)
 
 ```bash
-claude mcp add antiaimark -- /абс/путь/к/bin/antiaimark-mcp
+claude mcp add antiaimark -- /абс/путь/к/bin/antiaimark mcp
 # mcp.json для Cursor / Windsurf / Cline:
-{ "mcpServers": { "antiaimark": { "command": "/абс/путь/к/antiaimark-mcp" } } }
+{ "mcpServers": { "antiaimark": { "command": "/абс/путь/к/bin/antiaimark", "args": ["mcp"] } } }
 ```
 
 Инструменты: `capabilities`, `inspect_file`, `clean_file`, `inspect_text`,

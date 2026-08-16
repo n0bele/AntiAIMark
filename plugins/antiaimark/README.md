@@ -8,7 +8,7 @@
 
 ## 前置条件（必须）
 
-插件通过 stdio 拉起 `antiaimark-mcp` 二进制，请先安装到 PATH：
+插件通过 stdio 以 `antiaimark mcp` 方式拉起二进制，请先安装到 PATH：
 
 ```bash
 # macOS / Linux
@@ -48,7 +48,7 @@ claude plugin install antiaimark@antiaimark
 
 ## 服务端（HTTP）模式
 
-如果想给团队共用或连接远程服务，可以改用 HTTP 模式注册 `antiaimark-server`（部署一次，所有 IDE 填同一个 URL）：见仓库根目录 [docs/MCP.md](../../docs/MCP.md)。
+如果想给团队共用或连接远程服务，可以改用 HTTP 模式注册 `antiaimark server`（部署一次，所有 IDE 填同一个 URL）：见仓库根目录 [docs/MCP.md](../../docs/MCP.md)。
 
 ## 发布到 Claude 插件社区目录（Discover 页）
 

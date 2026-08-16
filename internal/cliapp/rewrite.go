@@ -1,8 +1,7 @@
-// rewrite-text: Go port of service/scripts/rewrite_text.py.
-//
-// Layer B optional rewrite hook for statistical (token-sampling) watermarks.
-//
-// Backends:
+package cliapp
+
+// RewriteText implements the rewrite-text CLI (Layer B optional rewrite hook
+// against statistical token-sampling watermarks). Backends:
 //
 //	print-prompt       — emit prompt only (default; CI-safe, no model)
 //	ollama             — POST to Ollama /api/chat
@@ -13,13 +12,11 @@
 // key) can never be re-sent to an unvalidated host; non-loopback endpoints
 // are denied unless ANTIAIMARK_REWRITE_ALLOW_REMOTE=1 (or --allow-remote).
 // The API key is read from ANTIAIMARK_REWRITE_API_KEY only — never argv.
-package main
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -513,33 +510,21 @@ func boolDict(m map[string]interface{}, key string) bool {
 	return b
 }
 
-// parseArgsAllowInterspersed mirrors argparse's tolerance of options after
-// positionals; Go's flag package rejects that natively.
-func parseArgsAllowInterspersed() (positional []string) {
-	args := os.Args[1:]
-	for {
-		if err := flag.CommandLine.Parse(args); err != nil {
-			os.Exit(2)
-		}
-		if flag.CommandLine.NArg() == 0 {
-			return positional
-		}
-		positional = append(positional, flag.CommandLine.Arg(0))
-		args = flag.CommandLine.Args()[1:]
-	}
-}
-
-func validateChoice(name, value string, allowed []string) {
+// validChoice returns false (printing an error) when value is not allowed,
+// replacing the original os.Exit(2) with a caller-controlled exit code.
+func validChoice(name, value string, allowed []string) bool {
 	for _, a := range allowed {
 		if value == a {
-			return
+			return true
 		}
 	}
 	cleaning.Eprint(fmt.Sprintf("invalid choice: '%s' for --%s (choose from %s)", value, name, "'"+strings.Join(allowed, "', '")+"'"))
-	os.Exit(2)
+	return false
 }
 
-func main() {
+// RewriteText implements the rewrite-text CLI.
+func RewriteText(args []string) int {
+	fs := newFlagSet("rewrite-text")
 	var output string
 	var backend, model, baseURL, reasoningEffort, strength, lang, originalLang string
 	var markllmScheme, markllmDir, markllmModel string
@@ -548,44 +533,50 @@ func main() {
 	var allowRemoteFlag string // "", "true", "false" (tri-state like argparse default=None)
 	var noLayerAAfter, jsonStats, forceText bool
 
-	flag.StringVar(&output, "o", "", "Output path (default: stdout or *.rewritten.*)")
-	flag.StringVar(&output, "output", "", "Output path (default: stdout or *.rewritten.*)")
+	fs.StringVar(&output, "o", "", "Output path (default: stdout or *.rewritten.*)")
+	fs.StringVar(&output, "output", "", "Output path (default: stdout or *.rewritten.*)")
 	choiceEnv := func(name, def string) string {
 		if v := envOrEmpty(name); v != "" {
 			return v
 		}
 		return def
 	}
-	flag.StringVar(&backend, "backend", choiceEnv("ANTIAIMARK_REWRITE_BACKEND", "print-prompt"), "rewrite backend")
-	flag.StringVar(&model, "model", envOrEmpty("ANTIAIMARK_REWRITE_MODEL"), "model name")
-	flag.StringVar(&baseURL, "base-url", choiceEnv("ANTIAIMARK_REWRITE_BASE_URL", "http://127.0.0.1:11434"), "backend base URL")
-	flag.StringVar(&allowRemoteFlag, "allow-remote", "", "Allow non-loopback rewrite endpoints (default: deny; ANTIAIMARK_REWRITE_ALLOW_REMOTE=1 has the same effect)")
-	flag.StringVar(&reasoningEffort, "reasoning-effort", choiceEnv("ANTIAIMARK_REWRITE_REASONING_EFFORT", "none"), "OpenAI-compatible reasoning_effort; 'none' skips chain-of-thought; 'off' omits the parameter entirely")
+	fs.StringVar(&backend, "backend", choiceEnv("ANTIAIMARK_REWRITE_BACKEND", "print-prompt"), "rewrite backend")
+	fs.StringVar(&model, "model", envOrEmpty("ANTIAIMARK_REWRITE_MODEL"), "model name")
+	fs.StringVar(&baseURL, "base-url", choiceEnv("ANTIAIMARK_REWRITE_BASE_URL", "http://127.0.0.1:11434"), "backend base URL")
+	fs.StringVar(&allowRemoteFlag, "allow-remote", "", "Allow non-loopback rewrite endpoints (default: deny; ANTIAIMARK_REWRITE_ALLOW_REMOTE=1 has the same effect)")
+	fs.StringVar(&reasoningEffort, "reasoning-effort", choiceEnv("ANTIAIMARK_REWRITE_REASONING_EFFORT", "none"), "OpenAI-compatible reasoning_effort; 'none' skips chain-of-thought; 'off' omits the parameter entirely")
 	// NOTE: no -api-key flag on purpose — keys on argv are visible in `ps`
 	// and shell history. Set ANTIAIMARK_REWRITE_API_KEY instead.
-	flag.StringVar(&strength, "strength", "paraphrase", "rewrite strength")
-	flag.StringVar(&lang, "lang", "French", "Pivot language for backtranslate")
-	flag.StringVar(&originalLang, "original-lang", "English", "Original language")
-	flag.Float64Var(&timeout, "timeout", 120.0, "HTTP timeout for the rewrite backend")
-	flag.Float64Var(&temperature, "temperature", 0.9, "Sampling temperature for the rewrite backend")
-	flag.IntVar(&candidates, "candidates", 1, "Number of rewrite candidates to generate and score")
-	flag.BoolVar(&noLayerAAfter, "no-layer-a-after", false, "Skip Layer A scrub on model output")
-	flag.BoolVar(&jsonStats, "json-stats", false, "Stats JSON on stderr")
-	flag.StringVar(&markllmScheme, "markllm-scheme", "", "Optional: run MarkLLM before/after detection around the rewrite")
-	flag.StringVar(&markllmDir, "markllm-dir", envOrEmpty("MARKLLM_DIR"), "MarkLLM checkout root (default: $MARKLLM_DIR)")
-	flag.StringVar(&markllmModel, "markllm-model", choiceEnv("ANTIAIMARK_MARKLLM_MODEL", defaultMarkllmModel), "Scoring model for MarkLLM detection")
-	flag.Float64Var(&markllmTimeout, "markllm-timeout", 180.0, "Timeout per MarkLLM detection call (default: 180.0)")
-	flag.BoolVar(&forceText, "force-text", false, "Rewrite even when the input looks like a binary container")
+	fs.StringVar(&strength, "strength", "paraphrase", "rewrite strength")
+	fs.StringVar(&lang, "lang", "French", "Pivot language for backtranslate")
+	fs.StringVar(&originalLang, "original-lang", "English", "Original language")
+	fs.Float64Var(&timeout, "timeout", 120.0, "HTTP timeout for the rewrite backend")
+	fs.Float64Var(&temperature, "temperature", 0.9, "Sampling temperature for the rewrite backend")
+	fs.IntVar(&candidates, "candidates", 1, "Number of rewrite candidates to generate and score")
+	fs.BoolVar(&noLayerAAfter, "no-layer-a-after", false, "Skip Layer A scrub on model output")
+	fs.BoolVar(&jsonStats, "json-stats", false, "Stats JSON on stderr")
+	fs.StringVar(&markllmScheme, "markllm-scheme", "", "Optional: run MarkLLM before/after detection around the rewrite")
+	fs.StringVar(&markllmDir, "markllm-dir", envOrEmpty("MARKLLM_DIR"), "MarkLLM checkout root (default: $MARKLLM_DIR)")
+	fs.StringVar(&markllmModel, "markllm-model", choiceEnv("ANTIAIMARK_MARKLLM_MODEL", defaultMarkllmModel), "Scoring model for MarkLLM detection")
+	fs.Float64Var(&markllmTimeout, "markllm-timeout", 180.0, "Timeout per MarkLLM detection call (default: 180.0)")
+	fs.BoolVar(&forceText, "force-text", false, "Rewrite even when the input looks like a binary container")
 	var langFlag string
-	cliutil.AddLangFlag(&langFlag)
-	positional := cliutil.ParseAllowInterspersed()
+	cliutil.AddLangFlagFS(fs, &langFlag)
+	positional := cliutil.ParseAllowInterspersedFS(fs, args)
 	cliutil.Init(langFlag)
 
-	validateChoice("backend", backend, []string{"print-prompt", "ollama", "openai-compatible"})
-	validateChoice("strength", strength, []string{"paraphrase", "backtranslate", "structural", "humanize", "code"})
-	validateChoice("reasoning-effort", reasoningEffort, []string{"none", "low", "medium", "high", "off"})
-	if markllmScheme != "" {
-		validateChoice("markllm-scheme", markllmScheme, []string{"kgw", "synthid", "synthid-text"})
+	if !validChoice("backend", backend, []string{"print-prompt", "ollama", "openai-compatible"}) {
+		return 2
+	}
+	if !validChoice("strength", strength, []string{"paraphrase", "backtranslate", "structural", "humanize", "code"}) {
+		return 2
+	}
+	if !validChoice("reasoning-effort", reasoningEffort, []string{"none", "low", "medium", "high", "off"}) {
+		return 2
+	}
+	if markllmScheme != "" && !validChoice("markllm-scheme", markllmScheme, []string{"kgw", "synthid", "synthid-text"}) {
+		return 2
 	}
 
 	path := "-"
@@ -635,7 +626,7 @@ func main() {
 		} else {
 			cleaning.Eprint("rewrite failed: " + msg)
 		}
-		os.Exit(1)
+		return 1
 	}
 
 	out := output
@@ -647,7 +638,7 @@ func main() {
 
 	if err := cleaning.WriteTextOutput(result, out); err != nil {
 		cleaning.Eprint("error: " + err.Error())
-		os.Exit(1)
+		return 1
 	}
 
 	if jsonStats {
@@ -663,5 +654,5 @@ func main() {
 		cleaning.Eprint(fmt.Sprintf("backend=%s strength=%s mode=%v chars %v->%v",
 			info["backend"], info["strength"], mode, info["input_chars"], outChars))
 	}
-	os.Exit(0)
+	return 0
 }

@@ -44,10 +44,10 @@ try {
 Expand-Archive -Path $Zip -DestinationPath $Tmp -Force
 
 # -- install ------------------------------------------------------------------
-Write-Host "==> installing binaries into $Dest" -ForegroundColor Green
+Write-Host "==> installing binary into $Dest" -ForegroundColor Green
 New-Item -ItemType Directory -Path $Dest -Force | Out-Null
 Copy-Item -Path (Join-Path $Tmp "$Target\*") -Destination $Dest -Force
-Write-Host "==> done: $Dest\antiaimark-mcp.exe, $Dest\antiaimark-server.exe"
+Write-Host "==> done: $Dest\antiaimark.exe"
 
 # -- PATH ---------------------------------------------------------------------
 $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
@@ -58,30 +58,30 @@ if (-not $UserPath.Split(";") -contains $Dest) {
 }
 
 # -- IDE registration ---------------------------------------------------------
-$McpBin = Join-Path $Dest "antiaimark-mcp.exe"
+$Exe = Join-Path $Dest "antiaimark.exe"
 $ServerUrl = "http://127.0.0.1:8765/mcp"
 @"
 
 ============================================================
   antiaimark MCP is ready - register it in any AI IDE
-  (stdio) : $McpBin
-  (HTTP)  : $ServerUrl   (run antiaimark-server first)
+  (stdio) : $Exe mcp
+  (HTTP)  : $ServerUrl   (run "antiaimark server" first)
 ============================================================
 
 Claude Code:
-  claude mcp add antiaimark -- $McpBin
+  claude mcp add antiaimark -- $Exe mcp
   # HTTP:  claude mcp add antiaimark --transport http $ServerUrl
 
 Cursor / Windsurf / Cline / Zed - project root .mcp.json:
-  { "mcpServers": { "antiaimark": { "command": "$McpBin" } } }
+  { "mcpServers": { "antiaimark": { "command": "$Exe", "args": ["mcp"] } } }
   # HTTP:  { "mcpServers": { "antiaimark": { "type": "http", "url": "$ServerUrl" } } }
 
 Claude Desktop - claude_desktop_config.json:
-  { "mcpServers": { "antiaimark": { "command": "$McpBin" } } }
+  { "mcpServers": { "antiaimark": { "command": "$Exe", "args": ["mcp"] } } }
 
 Codex CLI / WorkBuddy / DeepSeek Harness:
-  codex mcp add antiaimark -- $McpBin
-  WorkBuddy: ~/.workbuddy/mcp.json { "mcpServers": { "antiaimark": { "command": "$McpBin" } } }
+  codex mcp add antiaimark -- $Exe mcp
+  WorkBuddy: ~/.workbuddy/mcp.json { "mcpServers": { "antiaimark": { "command": "$Exe", "args": ["mcp"] } } }
   dsh: paste the integration prompt from docs/MCP.md
 
 Cline (VS Code) / Continue / VS Code Copilot / JetBrains AI:

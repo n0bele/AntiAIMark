@@ -36,8 +36,8 @@ require_linux_root() {
   [ "$(id -u)" = "0" ] || die "this command needs root (sudo ./deploy.sh $1)"
 }
 
-all_cmds=(clean-text inspect-text clean-image inspect-image clean-file inspect-file
-          rewrite-text audit-dir audit-website antiaimark-server antiaimark-mcp healthcheck)
+# Single merged binary: every subcommand (server/mcp/CLIs) behind one exe.
+all_cmds=(antiaimark)
 
 cmd_build() {
   require_go

@@ -14,8 +14,8 @@ never reimplement the pipeline.
                  ┌────────────────────────────────────────────┐
                  │              facades (thin)                │
    AI IDEs ──────▶  MCP server   HTTP API   CLIs   web UI     │
-   web apps  ─────▶  internal/mcp internal/httpapi  cmd/*     │
-   scripts   ──────▶            cmd/antiaimark-mcp            │
+   web apps  ─────▶  internal/mcp internal/httpapi  cliapp    │
+   scripts   ──────▶            cmd/antiaimark                │
                  └───────────────┬────────────────────────────┘
                                  │  pure library calls
                  ┌───────────────▼────────────────────────────┐
@@ -35,23 +35,24 @@ never reimplement the pipeline.
 | `internal/i18n` | Message catalog for every human-facing string (CLI output, HTTP errors, web UI, MCP tool descriptions). English is the reference and byte-identical to the Python originals. | — |
 | `internal/cliutil` | Shared CLI plumbing: argparse-style interspersed flag parsing, `--lang`, Python-parity fatal-error exits. | `cleaning`, `i18n` |
 | `internal/httpapi` | Embeddable HTTP service: the Python-compatible JSON API, the multipart upload/download web extension, the embedded web UI and `/api/i18n`. Errors localize per `Accept-Language`. | `cleaning`, `i18n` |
-| `internal/mcp` | MCP server exposing `capabilities`, `inspect_file`, `clean_file`, `inspect_text`, `clean_text` over both transports: JSON-RPC 2.0 over stdio (`antiaimark-mcp`) and Streamable HTTP (`/mcp` on the HTTP service, 2025-03-26 revision, with per-session state). Tool descriptions localize to the client's `initialize` locale. | `cleaning`, `i18n` |
+| `internal/cliapp` | Thin subcommand facade: every `antiaimark <cmd>` entry point (text/image/file CLIs, `rewrite-text`, `audit-*`, `server`, `mcp`, `healthcheck`) implemented on top of `cliutil` flag plumbing. | `cleaning`, `httpapi`, `mcp`, `janitor`, `i18n` |
+| `internal/mcp` | MCP server exposing `capabilities`, `inspect_file`, `clean_file`, `inspect_text`, `clean_text` over both transports: JSON-RPC 2.0 over stdio (`antiaimark mcp`) and Streamable HTTP (`/mcp` on the HTTP service, 2025-03-26 revision, with per-session state). Tool descriptions localize to the client's `initialize` locale. | `cleaning`, `i18n` |
 | `internal/janitor` | Background auto-clean: scheduled eviction of expired downloads; when free disk space falls below a threshold (default 11%) it removes this service's stale `wm-*` temp dirs oldest-first, purging pending downloads as a last resort. Injectable free-space probe and hooks. | `i18n` |
-| `cmd/*` | Thin binaries: the 9 CLIs, `antiaimark-server` (flags + `httpapi`), `antiaimark-mcp` (flags + stdio loop). | everything above |
+| `cmd/antiaimark` | The single merged binary: subcommand dispatch to `internal/cliapp` (the former 12 standalone `cmd/*` binaries — `clean-text`, `antiaimark-server`, `antiaimark-mcp`, … — are retired). | `cliapp` |
 
 ## Which facade should my plugin use?
 
-* **IDE / agent plugin (any MCP client)** → run `antiaimark-mcp` as a stdio
-  server. Registration for Claude Code:
+* **IDE / agent plugin (any MCP client)** → run `antiaimark mcp` as a stdio
+  server (one binary, many subcommands). Registration for Claude Code:
 
   ```bash
-  claude mcp add antiaimark -- /abs/path/to/antiaimark-mcp
+  claude mcp add antiaimark -- /abs/path/to/antiaimark mcp
   ```
 
   Cursor / Windsurf / Cline `mcp.json` equivalent:
 
   ```json
-  { "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark-mcp" } } }
+  { "mcpServers": { "antiaimark": { "command": "/abs/path/to/antiaimark", "args": ["mcp"] } } }
   ```
 
   …or, with the HTTP service running, register it as a remote server (no
@@ -73,7 +74,7 @@ never reimplement the pipeline.
   go http.ListenAndServe("127.0.0.1:8765", mux)
   ```
 
-  …or shell out to the `antiaimark-server` binary. The web UI at `/` already
+  …or shell out to the `antiaimark server` binary. The web UI at `/` already
   does image/video drag-and-drop with upload + download in 5 languages.
 
 * **Scripts / build tooling** → the CLIs (stable Python-compatible flags,

@@ -9,24 +9,18 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
-        -o /out/antiaimark-server ./cmd/antiaimark-server && \
-    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
-        -o /out/antiaimark-mcp ./cmd/antiaimark-mcp && \
-    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
-        -o /out/healthcheck ./cmd/healthcheck
+        -o /out/antiaimark ./cmd/antiaimark
 
 FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/antiaimark-server /usr/local/bin/antiaimark-server
-COPY --from=build /out/antiaimark-mcp     /usr/local/bin/antiaimark-mcp
-COPY --from=build /out/healthcheck        /usr/local/bin/healthcheck
+COPY --from=build /out/antiaimark /usr/local/bin/antiaimark
 
 ENV ANTIAIMARK_SERVER_VERSION=docker \
     ANTIAIMARK_SERVER_HOST=0.0.0.0 \
     ANTIAIMARK_SERVER_PORT=8765
 
 # distroless has no shell: the entrypoint must be the exec form.
-ENTRYPOINT ["/usr/local/bin/antiaimark-server"]
+ENTRYPOINT ["/usr/local/bin/antiaimark", "server"]
 EXPOSE 8765
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/healthcheck"]
+    CMD ["/usr/local/bin/antiaimark", "healthcheck"]

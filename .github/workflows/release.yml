@@ -2,12 +2,12 @@ name: Release
 
 # Publish prebuilt binaries to a GitHub Release. Trigger on any tag push:
 #
-#   git tag v1.0.0
-#   git push origin v1.0.0
+#   git tag v1.0.1
+#   git push origin v1.0.1
 #
-# Each release carries antiaimark-<os>-<arch>.tar.gz|.zip with every binary
-# (antiaimark-server, antiaimark-mcp, the CLIs, healthcheck) + README + LICENSE.
-# The tag version (without the leading "v") is stamped into the binaries.
+# Each release carries antiaimark-<os>-<arch>.tar.gz|.zip with the single
+# merged binary (antiaimark: server + MCP + all CLIs) + README + LICENSE.
+# The tag version (without the leading "v") is stamped into the binary.
 
 on:
   push:
