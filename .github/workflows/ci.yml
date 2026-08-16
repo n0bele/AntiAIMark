@@ -29,6 +29,11 @@ jobs:
       - name: Test
         run: go test ./...
 
+      - name: Validate Claude plugin marketplace
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: npx -y @anthropic-ai/claude-code plugin validate .
+
       - name: Cross-compile (linux/darwin/freebsd incl. janitor disk-free)
         if: matrix.os == 'ubuntu-latest'
         run: |

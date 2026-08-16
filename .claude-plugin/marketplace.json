@@ -1,0 +1,35 @@
+{
+  "name": "antiaimark",
+  "description": "Detect and strip AI provenance marks from text, images, documents, video and audio. Tools for Claude Code via MCP.",
+  "owner": {
+    "name": "n0bele",
+    "url": "https://github.com/n0bele"
+  },
+  "plugins": [
+    {
+      "name": "antiaimark",
+      "source": "./plugins/antiaimark",
+      "displayName": "AntiAIMark",
+      "description": "Detect and strip AI provenance marks: invisible Unicode steganography, C2PA/EXIF/XMP image metadata, container metadata (PDF, DOCX, ODT, SVG, HTML, Markdown, best-effort video), and vendor keywords (OpenAI, Imagen, Firefly, Midjourney, Stable Diffusion, FLUX, Ideogram, Recraft, Grok, 豆包·即梦, 腾讯混元, 通义万相, 可灵, 智谱, 文心一格, 海螺…).",
+      "version": "1.0.0",
+      "author": {
+        "name": "n0bele",
+        "url": "https://github.com/n0bele"
+      },
+      "repository": "https://github.com/n0bele/AntiAIMark",
+      "homepage": "https://github.com/n0bele/AntiAIMark",
+      "license": "MIT",
+      "keywords": [
+        "mcp",
+        "watermark",
+        "c2pa",
+        "provenance",
+        "steganography",
+        "privacy",
+        "ai-detection"
+      ],
+      "category": "MCP",
+      "tags": ["mcp", "privacy", "content"]
+    }
+  ]
+}

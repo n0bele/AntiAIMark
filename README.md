@@ -137,6 +137,20 @@ curl -fsSL https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/inst
 irm https://raw.githubusercontent.com/n0bele/AntiAIMark/main/scripts/install.ps1 | iex
 ```
 
+### Claude Code plugin marketplace
+
+Installable as a Claude Code plugin (one command, auto-updates):
+
+```bash
+claude plugin marketplace add n0bele/AntiAIMark
+claude plugin install antiaimark@antiaimark
+```
+
+Or in the `/plugin` UI: Marketplaces → add `n0bele/AntiAIMark`, then install `antiaimark`.
+See [plugins/antiaimark/README.md](plugins/antiaimark/README.md) for details. To get listed
+in the Claude Code Discover tab / community marketplace, follow
+[docs/plugin-submission.md](docs/plugin-submission.md).
+
 ## Optional ML harnesses
 
 Pixel removal (CtrlRegen / MarkDiffusion), SynthID scoring and MarkLLM text
