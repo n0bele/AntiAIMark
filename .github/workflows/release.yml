@@ -101,6 +101,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      # gh release create needs git owner/repo context, so we must
+      # materialise the repository (a bare download-artifact run has no .git).
+      - uses: actions/checkout@v4
+
       - name: Collect artifacts
         uses: actions/download-artifact@v4
         with:
@@ -111,6 +115,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # A GitHub auto-generated release (source archives only) may already
+          # exist from the annotated tag push. Drop it — the tag itself is
+          # kept — so gh release create can rebuild the release cleanly.
+          gh release delete "$GITHUB_REF_NAME" --yes 2>/dev/null || true
           gh release create "$GITHUB_REF_NAME" artifacts/* \
             --title "$GITHUB_REF_NAME" \
             --notes "Prebuilt binaries for every platform. Install with:
