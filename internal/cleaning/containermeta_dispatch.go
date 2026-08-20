@@ -33,6 +33,18 @@ func InspectContainer(path string) (ContainerInspectReport, error) {
 		if err != nil {
 			return ContainerInspectReport{}, err
 		}
+	case "pptx":
+		var err error
+		hasC2pa, hasAI, findings, details, err = inspectPptx(data)
+		if err != nil {
+			return ContainerInspectReport{}, err
+		}
+	case "xlsx":
+		var err error
+		hasC2pa, hasAI, findings, details, err = inspectXlsx(data)
+		if err != nil {
+			return ContainerInspectReport{}, err
+		}
 	case "odt":
 		var err error
 		hasC2pa, hasAI, findings, details, err = inspectOdt(data)
@@ -124,6 +136,24 @@ func CleanContainer(src, dest string, opts CleanContainerOptions) (map[string]in
 		}
 	case "docx":
 		cleaned, a, err := cleanDocx(data)
+		if err != nil {
+			return nil, err
+		}
+		actions = a
+		if err := SafeWriteBytes(dest, cleaned); err != nil {
+			return nil, err
+		}
+	case "pptx":
+		cleaned, a, err := cleanPptx(data)
+		if err != nil {
+			return nil, err
+		}
+		actions = a
+		if err := SafeWriteBytes(dest, cleaned); err != nil {
+			return nil, err
+		}
+	case "xlsx":
+		cleaned, a, err := cleanXlsx(data)
 		if err != nil {
 			return nil, err
 		}

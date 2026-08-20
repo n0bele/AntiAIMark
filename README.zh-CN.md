@@ -10,14 +10,13 @@ CLI、HTTP 服务 + 网页界面、面向 AI IDE 的 MCP 服务器，以及后�
 ## 功能
 
 - **文本（Layer A）**——零宽字符、双向控制符、标签字符、同形空格、私用区；非 UTF-8 输入逐字节无损往返
-- **图片**——PNG/JPEG/WebP 元数据：C2PA/JUMBF 清单、XMP `digitalSourceType=trainedAlgorithmicMedia`、生成器文本块；像素数据不动
-- **容器**——PDF（有 exiftool + qpdf 时使用）、DOCX/ODT 内部结构、SVG 元数据块、HTML meta/JSON-LD、Markdown frontmatter
-- **视频/音频**——best-effort：C2PA uuid/JUMBF box 扫描、QuickTime `©too` 原子、标记扫描（Suno/ElevenLabs/MusicGen…）、`exiftool -all=` 剥离
-- **厂商关键字**——OpenAI/Imagen/Firefly/Midjourney/Stable Diffusion/FLUX/Ideogram/Recraft/Grok +
-  豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺……（WordPress 等 CMS 标签保留不删）
-- **HTTP + 网页界面**——JSON API（`/inspect` `/clean`），图片视频拖拽上传、一次性下载
+- **图片**——PNG/JPEG/WebP 及 GIF/TIFF/HEIF/AVIF 元数据 · C2PA/JUMBF 清单、XMP `digitalSourceType=trainedAlgorithmicMedia`、生成器文本块；HEIF/AVIF 走原生 ISOBMFF 盒剥离，GIF 剥离 comment/app 扩展
+- **容器**——PDF（有 exiftool + qpdf 时使用）、DOCX/**PPTX**/**XLSX**/ODT 内部结构、SVG 元数据块、HTML meta/JSON-LD、Markdown frontmatter
+- **视频/音频**——MP4/MOV/M4V 走 ISOBMFF 原生剥离（moov/udta/meta/uuid + exiftool 互补），其余格式 byte-scan
+- **厂商关键字**——单一真源，含 Stability AI、Sora/Runway/Pika/Luma/Veo/Nova Reel/Stable Video/Udio/Riffusion + OpenAI/Imagen/Firefly/Midjourney/Stable Diffusion/FLUX/Ideogram/Recraft/Grok + 豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺……（WordPress 等 CMS 标签保留不删）
+- **HTTP + 网页界面**——JSON API（`/inspect` `/clean`），拖拽上传 + 一次性下载；格式卡片与真实路由表一致（ImageExts/ContainerExts/VideoExts/AudioExts）
 
-![网页界面（中文）：](docs/screenshot-zh.png)
+![网页界面（中文，高级设置展开）：](docs/screenshot-zh.png)
 
 - **MCP 服务器**——在 Claude Code/Desktop、Cursor、Windsurf、Cline、Continue、Zed 中作为原生工具
 - **五种语言**——en/zh/es/fr/ru 覆盖 CLI、HTTP 错误、网页界面与 MCP 描述

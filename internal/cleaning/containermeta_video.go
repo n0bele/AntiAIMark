@@ -1,6 +1,4 @@
-// Video container inspect/clean — a Go web extension (the Python original does
-// not handle video). Best-effort: byte-scan for provenance markers, and strip
-// metadata via exiftool when available; otherwise pass through.
+// Video container inspect/clean — native ISOBMFF parsing with exiftool fallback.
 package cleaning
 
 import (
@@ -9,20 +7,25 @@ import (
 	"path/filepath"
 )
 
-// inspectVideo does a best-effort provenance scan of a video byte blob.
-// Returns (has_c2pa, has_ai, findings, details).
+// isobmffVideoFormats are natively parsed via ISOBMFF boxes.
+var isobmffVideoFormats = map[string]bool{"mp4": true, "m4v": true, "mov": true}
+
+// inspectVideo does provenance scan: ISOBMFF-native for mp4/mov/m4v, byte-scan otherwise.
 func inspectVideo(data []byte, fmt string) (bool, bool, []string, map[string]interface{}) {
+	if isobmffVideoFormats[fmt] {
+		hasC2PA, hasAI, findings := isobmffInspect(data)
+		// Keep legacy uuid/jumb and ©too findings for parity if not already reported
+		return hasC2PA, hasAI, findings, map[string]interface{}{"format": fmt, "native": "isobmff"}
+	}
 	var findings []string
 	hasC2pa, hasAI, hits := blobHits(data)
 	for _, h := range hits {
 		findings = append(findings, "video byte-scan:"+h)
 	}
-	// C2PA in ISO BMFF lives in a "uuid" box with a JUMBF brand.
 	if bytes.Contains(data, []byte("uuid")) && bytes.Contains(bytes.ToLower(data), []byte("jumb")) {
 		hasC2pa = true
 		findings = append(findings, "video C2PA uuid box present")
 	}
-	// QuickTime metadata atoms (©-atoms) commonly carry AI generator strings.
 	if bytes.Contains(bytes.ToLower(data), []byte("©too")) {
 		hasAI = true
 		findings = append(findings, "video QuickTime ©too software atom present")
@@ -30,8 +33,8 @@ func inspectVideo(data []byte, fmt string) (bool, bool, []string, map[string]int
 	return hasC2pa, hasAI || hasC2pa, findings, map[string]interface{}{"format": fmt}
 }
 
-// cleanVideo copies src to dest, stripping metadata via exiftool when present.
-// Returns (actions, meta).
+// cleanVideo natively strips ISOBMFF provenance boxes; falls back to exiftool for
+// non-ISOBMFF formats or as supplemental pass.
 func cleanVideo(src, dest string, fmt string) ([]string, map[string]interface{}, error) {
 	data, err := os.ReadFile(src)
 	if err != nil {
@@ -42,6 +45,35 @@ func cleanVideo(src, dest string, fmt string) ([]string, map[string]interface{},
 	}
 	actions := []string{}
 	meta := map[string]interface{}{"format": fmt, "video": true}
+
+	if isobmffVideoFormats[fmt] {
+		stripped, innerActions, stripErr := isobmffStrip(data)
+		if stripErr == nil {
+			actions = append(actions, innerActions...)
+			meta["native"] = "isobmff"
+			// Supplemental exiftool pass when available (cleans XMP/udta remnants)
+			if exiftool := Which("exiftool"); exiftool != "" {
+				if err := SafeWriteBytes(dest, stripped); err != nil {
+					return nil, nil, err
+				}
+				res := runCaptured([]string{exiftool, "-all=", "-overwrite_original", SafeArg(dest)}, 60)
+				if res.timedOut {
+					actions = append(actions, "exiftool failed: "+pyTimeoutErr([]string{exiftool, "-all=", "-overwrite_original", SafeArg(dest)}, 60))
+				} else if res.err != nil {
+					actions = append(actions, "exiftool failed: "+res.err.Error())
+				} else {
+					actions = append(actions, "exiftool -all= supplemental (rc="+itoa(res.code)+")")
+				}
+				return actions, meta, nil
+			}
+			if err := SafeWriteBytes(dest, stripped); err != nil {
+				return nil, nil, err
+			}
+			return actions, meta, nil
+		}
+		// native strip failed — fall through to exiftool
+		actions = append(actions, "isobmff native strip failed: "+stripErr.Error())
+	}
 
 	exiftool := Which("exiftool")
 	if exiftool != "" {

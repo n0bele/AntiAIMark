@@ -38,17 +38,7 @@ var aiFrontmatterKeys = map[string]bool{
 	"llm":                 true,
 }
 
-// aiMetaNameRe mirrors AI_META_NAME_RE, including the public generator names
-// added 2026-08. Container payloads can contain prose, so dictionary-word
-// keys (imagen, firefly, flux, grok) are avoided here; the image hint table
-// carries the wider list.
-var aiMetaNameRe = regexp.MustCompile(`(?i)generator|ai[-_ ]?generated|claude|anthropic|openai|gemini|synthid|` +
-	`c2pa|content.?credential|provenance|digital.?source|aigc|` +
-	`midjourney|stable.?diffusion|sdxl|comfyui|automatic1111|` +
-	`black.?forest|flux1|flux\.1|ideogram|recraft|leonardo\.ai|` +
-	`dall-?e|gpt-image|adobe firefly|grok-aurora|` +
-	`doubao|豆包|jimeng|即梦|dreamina|hunyuan|混元|通义万相|` +
-	`cogview|cogvideo|文心一格|ernie.?vilg|hailuo|海螺|pixverse`)
+// aiMetaNameRe is defined in vendors.go (Single Source of Truth).
 
 var svgDropTags = map[string]bool{
 	"{http://www.w3.org/2000/svg}metadata": true,
@@ -143,6 +133,10 @@ func DetectContainerFormat(path string, data []byte) string {
 		return "pdf"
 	case ".docx":
 		return "docx"
+	case ".pptx":
+		return "pptx"
+	case ".xlsx":
+		return "xlsx"
 	case ".odt":
 		return "odt"
 	case ".html", ".htm":
@@ -194,6 +188,12 @@ func sniffZipFormat(data []byte) string {
 	}
 	if names["word/document.xml"] {
 		return "docx"
+	}
+	if names["ppt/presentation.xml"] {
+		return "pptx"
+	}
+	if names["xl/workbook.xml"] {
+		return "xlsx"
 	}
 	if names["content.xml"] && names["meta.xml"] {
 		return "odt"
@@ -465,13 +465,7 @@ var yamlKeyLineRe = regexp.MustCompile(`^([A-Za-z0-9_.-]+)\s*:`)
 var metaTagRe = regexp.MustCompile(`(?i)<meta\b[^>]*>`)
 var metaAttrRe = regexp.MustCompile(`(?i)(name|property|content|generator)\s*=\s*["']([^"']*)["']`)
 
-// Known AI vendor names for the "generator" meta tag. A plain CMS generator
-// (WordPress, Elementor) is CMS provenance, not AI-generator metadata.
-var generatorAIRe = regexp.MustCompile(`(?i)claude|anthropic|openai|chatgpt|gemini|synthid|copilot|midjourney|dall.?e|` +
-	`stable.?diffusion|sdxl|comfyui|automatic1111|black.?forest|flux1|flux\.1|` +
-	`ideogram|recraft|leonardo\.ai|gpt-image|imagen|adobe firefly|grok|` +
-	`doubao|豆包|jimeng|即梦|dreamina|hunyuan|混元|通义万相|wanx|kling|可灵|` +
-	`cogview|智谱|文心|ernie.?vilg|hailuo|海螺|vidu|pixverse`)
+// generatorAIRe is defined in vendors.go (Single Source of Truth).
 
 func metaAttrs(tag string) map[string]string {
 	attrs := map[string]string{}

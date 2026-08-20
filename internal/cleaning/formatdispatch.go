@@ -17,12 +17,14 @@ const (
 	KindContainer Kind = "container"
 )
 
-var ImageExts = map[string]bool{".png": true, ".jpg": true, ".jpeg": true, ".webp": true}
+var ImageExts = map[string]bool{".png": true, ".jpg": true, ".jpeg": true, ".webp": true, ".gif": true, ".tif": true, ".tiff": true, ".heif": true, ".heic": true, ".avif": true}
 
 var ContainerExts = map[string]bool{
 	".svg":      true,
 	".pdf":      true,
 	".docx":     true,
+	".pptx":     true,
+	".xlsx":     true,
 	".odt":      true,
 	".html":     true,
 	".htm":      true,

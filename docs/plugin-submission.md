@@ -25,7 +25,7 @@
 | 仓库地址 | `n0bele/AntiAIMark` |
 | 插件名 | `antiaimark`（kebab-case） |
 | Marketplace 名 | `antiaimark` |
-| 版本 | `1.0.1`（每次更新需 bump） |
+| 版本 | `1.0.2`（每次更新需 bump） |
 | 简介 | Detect and strip AI provenance marks: invisible Unicode steganography, C2PA/EXIF/XMP metadata, container metadata (PDF/DOCX/ODT/SVG/HTML/Markdown, best-effort video), vendor keywords — via MCP tools (inspect_file, clean_file, inspect_text, clean_text, capabilities) |
 | 分类 | MCP / Privacy & content |
 | 作者 | n0bele |

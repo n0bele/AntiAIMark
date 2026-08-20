@@ -12,19 +12,17 @@ auto-clean. Pure Go, static binaries, no runtime dependencies.
 
 - **Text (Layer A)** — zero-width characters, bidi overrides, tag characters,
   homoglyph spaces, private-use planes; byte-exact round-trip of non-UTF-8 input
-- **Images** — PNG/JPEG/WebP metadata: C2PA/JUMBF manifests, XMP
-  `digitalSourceType=trainedAlgorithmicMedia`, generator text chunks; pixel data untouched
-- **Containers** — PDF (exiftool + qpdf when available), DOCX/ODT internals,
+- **Images** — PNG/JPEG/WebP plus GIF/TIFF/HEIF/AVIF metadata · C2PA/JUMBF manifests, XMP
+  `digitalSourceType=trainedAlgorithmicMedia`, generator text chunks; native ISOBMFF box stripping for HEIF/AVIF, GIF comment/app-extension stripping
+- **Containers** — PDF (exiftool + qpdf when available), DOCX/**PPTX**/**XLSX**/ODT internals,
   SVG metadata blocks, HTML meta/JSON-LD, Markdown frontmatter
-- **Video & audio** — best-effort: C2PA uuid/JUMBF box scan, QuickTime `©too` atom,
-  marker scan (Suno/ElevenLabs/MusicGen…), `exiftool -all=` strip
-- **Vendor keywords** — OpenAI/Imagen/Firefly/Midjourney/Stable Diffusion/
-  FLUX/Ideogram/Recraft/Grok + 豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺…
+- **Video & audio** — ISOBMFF-native for MP4/MOV/M4V (moov/udta/meta/uuid stripping + exiftool supplemental); byte-scan for the rest
+- **Vendor keywords** — single source of truth including Stability AI, Sora/Runway/Pika/Luma/Veo/Nova Reel/Stable Video/Udio/Riffusion + OpenAI/Imagen/Firefly/Midjourney/Stable Diffusion/FLUX/Ideogram/Recraft/Grok + 豆包·即梦/腾讯混元/通义万相/可灵/智谱/文心一格/海螺…
   (CMS tags like WordPress are preserved)
 - **HTTP + web UI** — JSON API (`/inspect` `/clean`), drag & drop upload with
-  one-shot download for images and videos
+  one-shot download; format cards now reflect the real dispatch table (ImageExts/ContainerExts/VideoExts/AudioExts)
 
-![The web UI (English):](docs/screenshot-en.png)
+![The web UI (English, Advanced expanded):](docs/screenshot-en.png)
 
 - **MCP server** — native tools inside Claude Code/Desktop, Cursor, Windsurf, Cline, Continue, Zed…
 - **5 languages** — en / zh / es / fr / ru across CLIs, HTTP errors, web UI and MCP descriptions
